@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/dialog_bg"
+    android:id="@+id/ll_dialog_root"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/tv_dialog_msg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="#000000"
+        android:paddingTop="45px"
+        android:paddingBottom="45px"
+        android:textSize="42px" />
+
+	 <View
+        android:layout_width="match_parent"
+        android:layout_height="0.1dp"
+         android:background="#7B7B7B"
+        />
+
+         <Button
+             android:id="@+id/btn_mid"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:background="@drawable/dialog_mid_btn_selector"
+               android:paddingTop="40px"
+        		android:paddingBottom="40px"
+             android:textColor="#0080FF"
+              android:textSize="42px"
+             android:text="知道了" />
+
+</LinearLayout>

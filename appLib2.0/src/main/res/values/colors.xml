@@ -1,0 +1,15 @@
+<resources>
+
+    <color name="crop__button_bar">#f3f3f3</color>
+    <color name="crop__button_text">#666666</color>
+    <color name="crop__selector_pressed">#1a000000</color>
+    <color name="crop__selector_focused">#77000000</color>
+    <color name="highlight">#f3f3f3</color>
+    <color name="white">#FFFFFF</color>
+    <color name="transparent">#00000000</color>
+
+    <color name="gray_9">#999999</color>
+    <color name="black_3">#333333</color>
+    <color name="gray_listLine">#D5D5D5</color>
+    <color name="gray_text">#7D7D7D</color>
+</resources>

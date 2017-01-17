@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" >
+     <solid android:color="#ddffffff" />
+      <corners android:topLeftRadius="12dp"
+        android:topRightRadius="12dp"
+        android:bottomRightRadius="12dp"
+        android:bottomLeftRadius="12dp"/>
+
+</shape>
+<!-- solid设置填充颜色，颜色值以#80开头表示透明
+stroke 设置边框宽度，颜色值
+corners设置圆角 -->
+
+

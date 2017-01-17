@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AppLib</string>
+    <string name="crop__done">完成</string>
+    <string name="crop__cancel">取消</string>
+    <string name="crop__saving">保存图片</string>
+    <string name="crop__wait">请稍候…</string>
+    <string name="crop__pick_error">图片无法访问</string>
+
+    <string name="recycler_view_loading">正在加载中...</string>
+    <string name="recycler_view_load_failed">加载失败，请点我重试</string>
+    <string name="recycler_view_load_end">没有更多数据了</string>
+
+    <!-- Download error -->
+    <string name="download_error">下载出错了：%1$s</string>
+    <string name="download_error_server">服务器数据错误！</string>
+    <string name="download_error_network">网络不可用，请检查网络！</string>
+    <string name="download_error_storage">存储卡错误，请检查存储卡！</string>
+    <string name="download_error_space">存储卡空间不足！</string>
+    <string name="download_error_timeout">下载超时！</string>
+    <string name="download_error_un_know_host">找不到服务器。</string>
+    <string name="download_error_url">URL地址错误。</string>
+    <string name="download_error_un">未知错误。</string>
+</resources>
