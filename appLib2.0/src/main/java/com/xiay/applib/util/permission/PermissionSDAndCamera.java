@@ -1,6 +1,7 @@
 package com.xiay.applib.util.permission;
 
 import android.Manifest;
+import android.app.Activity;
 import android.support.v4.app.Fragment;
 
 import com.xiay.applib.AppActivity;
@@ -10,7 +11,7 @@ import com.xiay.applib.AppActivity;
  * */
 public  class PermissionSDAndCamera extends PermissionBase {
     public static final   int PERMISSION_CODE=1002;
-    public PermissionSDAndCamera(AppActivity activity){
+    public PermissionSDAndCamera(Activity activity){
         super(activity);
         sendRequest();
     }

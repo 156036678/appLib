@@ -48,8 +48,7 @@
                  android:supportsRtl="true"
     >
 
-        <activity android:name="com.xiay.applib.AppSelectPicAct" android:theme="@style/MyDialogStyleBottom"  android:exported="true" android:configChanges="keyboardHidden|orientation|screenSize" android:screenOrientation="portrait"/>
-        <activity android:name=".image.crop.CropImageActivity" android:theme="@style/CustomTheme"/>
+        <activity android:name=".imageselector.crop.CropImageActivity" android:theme="@style/CustomTheme"/>
         <service android:name=".service.AppUpdateService" />
         <service android:name=".service.AppDownPicService" />
 
@@ -68,6 +67,17 @@
             android:windowSoftInputMode="adjustResize|stateHidden" >
         </activity>
         <!-- alipay sdk end -->
+
+
+        <activity
+            android:name=".imageselector.view.ImageSelectorActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name="imageselector.view.ImagePreviewActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name=".imageselector.view.ImagePreviewDeleteActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
     </application>
 
 </manifest>

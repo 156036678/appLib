@@ -1,6 +1,7 @@
 package com.xiay.applib.util.permission;
 
 import android.Manifest;
+import android.app.Activity;
 import android.support.v4.app.Fragment;
 
 import com.xiay.applib.AppActivity;
@@ -10,7 +11,7 @@ import com.xiay.applib.AppActivity;
  * */
 public  class PermissionLocation extends PermissionBase {
     public static final   int PERMISSION_CODE=1001;
-    public PermissionLocation(AppActivity activity){
+    public PermissionLocation(Activity activity){
         super(activity);
         sendRequest();
     }

@@ -8,8 +8,17 @@
     <color name="white">#FFFFFF</color>
     <color name="transparent">#00000000</color>
 
+    <color name="black">#000000</color>
     <color name="gray_9">#999999</color>
     <color name="black_3">#333333</color>
     <color name="gray_listLine">#D5D5D5</color>
     <color name="gray_text">#7D7D7D</color>
+
+
+    <color name="image_selector_content_gray">#353535</color>
+    <color name="image_selector_image_overlay">#20000000</color>
+    <color name="image_selector_image_overlay2">#80000000</color>
+    <color name="image_selector_bar_gray_90">#dd393a3e</color>
+    <color name="image_selector_green_70">#AD43c117</color>
+    <color name="image_selector_divider_color">#dcdcdc</color>
 </resources>

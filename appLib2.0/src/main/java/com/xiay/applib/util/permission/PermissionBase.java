@@ -1,5 +1,6 @@
 package com.xiay.applib.util.permission;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -19,13 +20,13 @@ import java.util.ArrayList;
 
 public abstract class PermissionBase {
 
-    public AppActivity act;
+    public Activity act;
     public Fragment fragment;
     RationaleListener listener;
     public static String PERMISSION_NAME;
     public static String PERMISSION_NICE_NAME;
 
-    public PermissionBase(AppActivity act) {
+    public PermissionBase(Activity act) {
         this.act = act;
     }
 
@@ -54,7 +55,7 @@ public abstract class PermissionBase {
                 .send();
     }
 
-    public static void showNoPermissionDialog(final AppActivity act, String permissionName, String... permissions) {
+    public static void showNoPermissionDialog(final Activity act, String permissionName, String... permissions) {
         for (int i = 0; i < permissions.length; i++) {
             if (permissions[i]!=null){
                 if (AndPermission.getShouldShowRationalePermissions(act, permissions)) {
@@ -137,7 +138,7 @@ public abstract class PermissionBase {
         }
     };
 
-    public static void openAppDetailSettingIntent(AppActivity act) {
+    public static void openAppDetailSettingIntent(Activity act) {
         Intent localIntent = new Intent();
         localIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         if (Build.VERSION.SDK_INT >= 9) {
@@ -148,6 +149,6 @@ public abstract class PermissionBase {
             localIntent.setClassName("com.android.settings", "com.android.settings.InstalledAppDetails");
             localIntent.putExtra("com.android.settings.ApplicationPkgName", act.getPackageName());
         }
-        act.openActivity(localIntent);
+        act.startActivity(localIntent);
     }
 }
