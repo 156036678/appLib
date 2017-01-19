@@ -3,7 +3,7 @@ apply plugin: 'org.greenrobot.greendao'
 apply plugin: 'com.github.dcendents.android-maven'
 //你的Github用户名替换一下
 group='com.github.156036678'
-version = '1.0.0'
+version = '1.0.2'
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
