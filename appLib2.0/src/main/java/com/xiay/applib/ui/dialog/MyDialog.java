@@ -69,6 +69,19 @@ public class MyDialog extends BaseDialog {
 		}
 		return this;
 	}
+	public MyDialog showCancle(String msg, ClickListener listener) {
+		if (!isShowing()) {
+			setContentView(R.layout.dialog_msg_one);
+			ViewUtil.scaleContentView((LinearLayout)findViewById(R.id.ll_dialog_root));
+			TextView tv_msg = findView(R.id.tv_dialog_msg);
+			tv_msg.setText(msg);
+			Button btn =findView(btn_mid);
+			setOnClickView(btn,listener);
+			if (!((Activity)ctx).isFinishing())
+				show();
+		}
+		return this;
+	}
 	public MyDialog showCancleAndSure(String msg, String cancleBtnText, String sureBtnText, ClickListener listener) {
 		return showCancleAndSure(null,msg,cancleBtnText,sureBtnText,listener);
 	}

@@ -39,6 +39,12 @@ import static com.xiay.applib.util.GreenDao.getDaoSession;
  * @author Xiay
  */
 public abstract class AppLaunchAct extends AppActivity {
+    /**是否使用网络图片*/
+    private   boolean isUseUrlGuidePic=false;
+    /**是否使用网络图片*/
+    public void setUseUrlGuidePicEnable(boolean useUrlGuidePic) {
+        isUseUrlGuidePic = useUrlGuidePic;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,12 +72,25 @@ public abstract class AppLaunchAct extends AppActivity {
                         }
                     }).setCancelable(false);
                 } else {
-                    rxManager.add(Observable.just(0).delay(2500, TimeUnit.MICROSECONDS).subscribe(new Action1<Integer>() {
-                        @Override
-                        public void call(Integer integer) {
-                            checkGuidePic();
+                    if (isUseUrlGuidePic){
+                        rxManager.add(Observable.just(0).delay(2500, TimeUnit.MICROSECONDS).subscribe(new Action1<Integer>() {
+                            @Override
+                            public void call(Integer integer) {
+                                checkGuidePic();
+                            }
+                        }));
+                    }else {
+                        DBGuideDao dBGuideDao = getDaoSession().getDBGuideDao();
+                        DBGuide dbGuide = dBGuideDao.queryBuilder().unique();
+                        if (dbGuide == null) {//如果是第一次启动
+                            dbGuide = new DBGuide();
+                            dbGuide.isFirstLunch = false;
+                            dBGuideDao.save(dbGuide);//保存最新数据
+                            isShowGuideWithApp = true;
                         }
-                    }));
+                        isShowGuide(isShowGuideWithApp, isShowGuideWithSDPic);
+                    }
+
                 }
             }
         });

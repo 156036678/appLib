@@ -1,6 +1,8 @@
 package com.xiay.applib.bean;
 
-public class BaseBean {
+import android.databinding.BaseObservable;
+
+public class BaseBean extends BaseObservable {
     public int status;
     public String msg;
 

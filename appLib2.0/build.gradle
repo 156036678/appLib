@@ -50,7 +50,6 @@ dependencies {
     compile 'com.google.code.gson:gson:2.2.4'
         compile 'com.android.support:recyclerview-v7:+'
         compile 'com.android.support:appcompat-v7:+'
-   //  compile project(':AppJar2.0')
     compile files('libs/AppJar.jar')
     compile 'com.squareup.okhttp3:okhttp-urlconnection:3.4.1'
     compile 'com.yanzhenjie:permission:1.0.2'
@@ -64,4 +63,5 @@ dependencies {
     compile 'org.greenrobot:greendao-generator:+'
 
     compile 'com.tencent.bugly:crashreport:+'
+    compile 'com.android.databinding:library:1.0-rc3'
 }

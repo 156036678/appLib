@@ -78,15 +78,28 @@ public abstract class AppListAct<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>> ext
 	 * @param emptyMessage   adapter为空的时候提示文字
 	 */
 	public void initListView(int dividerHeight,int dividerColor,AD adapter,String emptyMessage) {
+		RecyclerView.ItemDecoration itemDecoration=null;
 		rv_list = (RecyclerView)findViewById(R.id.rv_list);
 		if (dividerHeight!=-2){//如果不是默认
 			if (dividerColor==-1)
 				dividerColor=R.color.transparent;
 			if (dividerHeight!=-1)
-				rv_list.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).size(ViewUtil.scaleValue(dividerHeight)).color(getResources().getColor(dividerColor)).build());
+				itemDecoration=new HorizontalDividerItemDecoration.Builder(this).size(ViewUtil.scaleValue(dividerHeight)).color(getResources().getColor(dividerColor)).build();
 		}else {
-			rv_list.addItemDecoration(new HorizontalDividerItemDecoration.Builder(getContext()).size(ViewUtil.scaleValue(1)).color(getResources().getColor(R.color.gray_listLine)).build());
+			itemDecoration=new HorizontalDividerItemDecoration.Builder(getContext()).size(ViewUtil.scaleValue(1)).color(getResources().getColor(R.color.gray_listLine)).build();
 		}
+		initListView(itemDecoration,adapter,emptyMessage);
+	}
+	/**
+	 *  初始化列表
+	 * @param itemDecoration 分割线样式
+	 * @param adapter
+	 * @param emptyMessage   adapter为空的时候提示文字
+	 */
+	public void initListView(RecyclerView.ItemDecoration itemDecoration, AD adapter, String emptyMessage) {
+		rv_list = (RecyclerView)findViewById(R.id.rv_list);
+		if (itemDecoration!=null)
+		rv_list.addItemDecoration(itemDecoration);
 		rv_list.setLayoutManager(new WrapContentLinearLayoutManager(this));
 		//      添加动画
 		rv_list.setItemAnimator(new DefaultItemAnimator());
