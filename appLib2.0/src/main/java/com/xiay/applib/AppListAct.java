@@ -6,6 +6,7 @@ import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.GestureDetector;
 import android.view.HapticFeedbackConstants;
@@ -44,6 +45,7 @@ import static com.xiay.applib.view.recyclerview.RecyclerBaseAdapter.LOADING_VIEW
  */
 public abstract class AppListAct<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>> extends AppActivity implements RecyclerView.OnItemTouchListener,OnListItemClickListener<ADT,AD>, SwipeRefreshLayout.OnRefreshListener, RecyclerBaseAdapter.RequestLoadMoreListener , HttpListener<RQ> {
 	private ViewGroup emptyView;
+	private String emptyText;
 	public RecyclerView rv_list;
 	public AD adapter;
 	private GestureDetectorCompat mGestureDetector;
@@ -100,7 +102,8 @@ public abstract class AppListAct<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>> ext
 		rv_list = (RecyclerView)findViewById(R.id.rv_list);
 		if (itemDecoration!=null)
 		rv_list.addItemDecoration(itemDecoration);
-		rv_list.setLayoutManager(new WrapContentLinearLayoutManager(this));
+		rv_list.setLayoutManager(new WrapContentLinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+
 		//      添加动画
 		rv_list.setItemAnimator(new DefaultItemAnimator());
 		rv_list.addOnItemTouchListener(this);
@@ -113,7 +116,7 @@ public abstract class AppListAct<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>> ext
 			mSwipeRefreshLayout.setOnRefreshListener(this);
 		}
 		if (emptyMessage!=null) {
-			adapter.setEmptyView(getEmptyView(emptyMessage));
+			emptyView=getEmptyView(emptyMessage);
 		}
 	}
 
@@ -123,7 +126,7 @@ public abstract class AppListAct<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>> ext
      */
 	public void setGridLayoutCount(int count){
 		rv_list.setLayoutManager(new GridLayoutManager(this, count));
-		rv_list.addItemDecoration(new GridSpacingItemDecoration(3,10, false));
+		rv_list.addItemDecoration(new GridSpacingItemDecoration(count,10, false));
 		//	rv_list.addItemDecoration(new GridSpacingItemDecoration(3, ViewUtil.scaleValue(6), false));
 	}
 	public  void setLoadMoreEnable(){
@@ -360,8 +363,8 @@ public abstract class AppListAct<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>> ext
 	}
 
 	protected void addEmptyView(String emptyText) {
-		if (emptyText != null && emptyView == null)
-			adapter.setEmptyView(getEmptyView(emptyText));
+		if (emptyText != null)
+			adapter.setEmptyView(emptyView);
 	}
 
 	protected void addHeaderAndEmptyView(View header, String emptyText) {

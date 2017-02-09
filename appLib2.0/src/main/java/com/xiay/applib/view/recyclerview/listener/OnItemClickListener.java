@@ -27,7 +27,7 @@ public abstract   class OnItemClickListener<T extends RecyclerBaseAdapter> exten
 
     @Override
     public void onItemChildClick(RecyclerBaseAdapter adapter, View view, int position) {
-
+        itemChildClick((T)adapter,view,position);
     }
 
     @Override
@@ -35,5 +35,6 @@ public abstract   class OnItemClickListener<T extends RecyclerBaseAdapter> exten
 
     }
     public abstract void itemClick(T adapter, View view, int position);
+    public  void itemChildClick(T adapter, View view, int position){};
     public  void itemLongClick(T adapter, View view, int position){}
 }

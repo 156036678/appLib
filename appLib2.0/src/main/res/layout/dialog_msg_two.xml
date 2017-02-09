@@ -1,67 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_dialog_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/dialog_bg"
-    android:id="@+id/ll_dialog_root"
-    android:orientation="vertical" >
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/tv_dialog_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center|bottom"
-        android:textColor="#000000"
-        android:text="提示信息"
-        android:paddingTop="45px"
         android:paddingBottom="55px"
+        android:paddingTop="45px"
+        android:text="提示信息"
+        android:textColor="#000000"
         android:textSize="45px" />
 
     <TextView
         android:id="@+id/tv_dialog_msg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-         android:gravity="center"
-           android:textColor="#000000"
-            android:text="对方角度看"
+        android:gravity="center"
         android:paddingBottom="55px"
-        android:textSize="40px"/>
+        android:textColor="#000000"
+        android:textSize="40px" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1.4px"
         android:background="#B4B4B4" />
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="148px"
-        >
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/btn_cancle"
-            android:layout_width="match_parent"
+            android:layout_width="0px"
             android:layout_height="match_parent"
+            android:layout_toLeftOf="@+id/v_line"
+            android:layout_weight="1"
             android:background="@drawable/dialog_left_btn_selector"
             android:textColor="#0080FF"
-                  android:text="对方角度看"
-            android:layout_toLeftOf="@+id/v_line"
             android:textSize="42px" />
- 	<View
- 	    android:id="@+id/v_line"
-        android:layout_width="0.5px"
-        android:layout_height="match_parent"
-        android:layout_centerHorizontal="true"
-        android:background="#B4B4B4" />
+        <View
+            android:id="@+id/v_line"
+            android:layout_width="0.5px"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            android:background="#B4B4B4" />
+
         <Button
             android:id="@+id/btn_sure"
-            android:layout_width="match_parent"
+            android:layout_width="0px"
             android:layout_height="match_parent"
-            android:background="@drawable/dialog_right_btn_selector"
-            android:textColor="#0080FF"
-                  android:text="是滴"
             android:layout_toRightOf="@+id/v_line"
-
+            android:layout_weight="1"
+            android:background="@drawable/dialog_right_btn_selector"
+            android:text="是滴"
+            android:textColor="#0080FF"
             android:textSize="42px" />
-    </RelativeLayout>
+    </LinearLayout>
 
 </LinearLayout>
