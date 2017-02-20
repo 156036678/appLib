@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.nohttp.extra.HttpListener;
 import com.nohttp.rest.Response;
+import com.xiay.applib.util.RecyclerViewUtil;
 import com.xiay.applib.view.VerticalSwipeRefreshLayout;
 import com.xiay.applib.view.recyclerview.RecyclerBaseAdapter;
 import com.xiay.applib.view.recyclerview.RecyclerViewHolder;
@@ -50,10 +51,7 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 	private Set<Integer> longClickViewIds;
 	protected VerticalSwipeRefreshLayout mSwipeRefreshLayout;
 	protected int currentPage = 1;
-	/**
-	 * 每次分页获取的大小
-	 */
-	protected int perPageSize = 10;
+	private RecyclerViewUtil recyclerViewUtil;
 	public boolean isShowEnd = true;
 	View viewRoot;
 
@@ -100,6 +98,7 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 			mSwipeRefreshLayout.setColorSchemeResources(R.color.red, R.color.green, R.color.yellow);
 			mSwipeRefreshLayout.setOnRefreshListener(this);
 		}
+		recyclerViewUtil=new RecyclerViewUtil(activity,rv_list,adapter,mSwipeRefreshLayout,10,emptyMessage);
 	}
 	public  void setLoadMoreEnable(){
 		setLoadMoreEnable(true);
@@ -340,22 +339,16 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 
 	}
 	protected void addHeaderView(View header) {
-		adapter.removeAllHeaderView();
-		adapter.addHeaderView(header);
-		adapter.setHeaderAndEmpty(true);
+		recyclerViewUtil.addHeaderView(header);
 	}
 
 	protected void addEmptyView(String emptyText) {
-		if (emptyText != null && emptyView == null)
-			adapter.setEmptyView(getEmptyView(emptyText));
+		recyclerViewUtil.addEmptyView(emptyText);
 	}
 
 	protected void addHeaderAndEmptyView(View header, String emptyText) {
-		adapter.removeAllHeaderView();
-		adapter.addHeaderView(header);
-		adapter.setHeaderAndEmpty(true);
-		if (emptyText!=null)
-			adapter.setEmptyView(getEmptyView(emptyText));
+		recyclerViewUtil.addHeaderAndEmptyView(header,emptyText);
+
 	}
 
 	protected void setListData(List<ADT> newData) {
@@ -363,47 +356,16 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 	}
 
 	protected void setListData(List<ADT> newData, String noDataText) {
-		if (newData == null) {
-			mSwipeRefreshLayout.setRefreshing(false);
-			addEmptyView(noDataText);
-			return;
-		}
-		if (currentPage == 1) {
-			if (newData.size() == 0) {
-				addEmptyView(noDataText);
-				adapter.getData().clear();
-				adapter.notifyDataSetChanged();
-				adapter.removeAllFooterView();
-			} else if (newData.size() < perPageSize) {
-				adapter.setNewData(newData);
-				toEnd();
-			} else {
-				adapter.setNewData(newData);
-			}
-		} else {
-			if (newData.size() < perPageSize) {
-				if (newData.size() > 0)
-					adapter.addData(newData);
-				toEnd();
-			} else {
-				adapter.addData(newData);
-				adapter.loadMoreComplete();
-			}
-		}
-		if (mSwipeRefreshLayout!=null)
-	    	mSwipeRefreshLayout.setRefreshing(false);
+		recyclerViewUtil.setCurrentPage(currentPage);
+		recyclerViewUtil.setListData(newData,noDataText);
 	}
-	public void toEnd() {
-		if (adapter != null) {
-			adapter.loadMoreEnd(isShowEnd);
-		}
-	}
-	public abstract void getListData();
 	@Override
 	public void onFailed(int i, Response response) {
-		if (mSwipeRefreshLayout!=null)
-		  mSwipeRefreshLayout.setRefreshing(false);
-		if (adapter!=null)
-			adapter.loadMoreFail();
+		recyclerViewUtil.onFailed();
 	}
+	/**设置每页加载多少条数据*/
+	protected  void  setPerPageSize(int perPageSize){
+		recyclerViewUtil.setPerPageSize(perPageSize);
+	}
+	public abstract void getListData();
 }

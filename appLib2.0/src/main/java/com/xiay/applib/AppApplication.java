@@ -23,7 +23,6 @@ import com.xiay.applib.util.rxjava.bean.RxTask;
 
 import cn.xiay.bean.MyDevice;
 import cn.xiay.ui.Toast;
-import cn.xiay.util.AppActivityManager;
 import cn.xiay.util.SPUtil;
 import cn.xiay.util.log.Log;
 
@@ -39,7 +38,6 @@ public  class AppApplication extends Application {
 		String packageName = context.getPackageName();
 		if (packageName.equals(AppUtil.getProcessName(android.os.Process.myPid()))) {
 			Log.i("xxxxx"+AppUtil.getProcessName(android.os.Process.myPid()));
-			AppActivityManager.init();
 			RxUtil.executeRxTask(new RxTask() {
 				@Override
 				public void doInIOThread() {
