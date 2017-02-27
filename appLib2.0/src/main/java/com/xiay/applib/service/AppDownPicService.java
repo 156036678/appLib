@@ -34,8 +34,8 @@ import com.xiay.applib.R;
 import com.xiay.applib.bean.DataGuidePic;
 import com.xiay.applib.db.DBGuide;
 import com.xiay.applib.db.DBGuidePic;
+import com.xiay.applib.util.AppGreenDao;
 import com.xiay.applib.util.AppUtil;
-import com.xiay.applib.util.GreenDao;
 import com.xiay.applib.util.rxjava.RxUtil;
 import com.xiay.applib.util.rxjava.bean.RxIOTask;
 
@@ -47,7 +47,7 @@ import cn.xiay.util.log.Log;
 import gen.greendao.DBGuideDao;
 import gen.greendao.DBGuidePicDao;
 
-import static com.xiay.applib.util.GreenDao.getDaoSession;
+import static com.xiay.applib.util.AppGreenDao.getDaoSession;
 /*##################################################
                        _ooOoo_
                       o8888888o
@@ -202,7 +202,7 @@ public class AppDownPicService extends Service {
                                 HttpUtil.getDownloadInstance(1).add(i, mDownloadRequests.get(downErrorIndex.get(i)), listener);
                             }
                         }else {//保存下载路径到数据库
-                            DBGuidePicDao dBGuidePicDao=  GreenDao.getDaoSession().getDBGuidePicDao();
+                            DBGuidePicDao dBGuidePicDao=  AppGreenDao.getDaoSession().getDBGuidePicDao();
                             dBGuidePicDao.deleteAll();
                             ArrayList<DBGuidePic> dBGuidePics=new ArrayList<>();
                             for (String url: donePics) {

@@ -15,9 +15,11 @@ import com.nohttp.cache.DBCacheStore;
 import com.nohttp.cookie.DBCookieStore;
 import com.nohttp4okhttp.OkHttpNetworkExecutor;
 import com.tencent.bugly.crashreport.CrashReport;
+import com.xiay.applib.bean.AppAction;
 import com.xiay.applib.ui.dialog.MyToast;
 import com.xiay.applib.util.AppUtil;
-import com.xiay.applib.util.GreenDao;
+import com.xiay.applib.util.AppGreenDao;
+import com.xiay.applib.util.rxjava.RxBus;
 import com.xiay.applib.util.rxjava.RxUtil;
 import com.xiay.applib.util.rxjava.bean.RxTask;
 
@@ -43,7 +45,7 @@ public  class AppApplication extends Application {
 				public void doInIOThread() {
 					SPUtil.init(context);
 					displayMetrics(context);
-					new GreenDao().init(context);
+					new AppGreenDao().init(context);
 					//NoHttp.initialize(AppTinkerApplication.this);
 					// 如果你需要自定义配置：
 					NoHttp.initialize(context, new Config()
@@ -115,5 +117,9 @@ public  class AppApplication extends Application {
 		if (isDebug){
 			Log.isPrint=true;
 		}
+	}
+	/**数据初始化完成之后必须调用此方法*/
+	public void initFinish(){
+		RxBus.get().post(AppAction.ON_APPLICATION_INIT_FINISH);
 	}
 }

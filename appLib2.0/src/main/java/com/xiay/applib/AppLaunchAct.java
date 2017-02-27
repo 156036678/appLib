@@ -11,7 +11,7 @@ import com.xiay.applib.db.DBGuide;
 import com.xiay.applib.db.DBGuidePic;
 import com.xiay.applib.listener.HttpCallBack;
 import com.xiay.applib.service.AppDownPicService;
-import com.xiay.applib.util.GreenDao;
+import com.xiay.applib.util.AppGreenDao;
 import com.xiay.applib.util.rxjava.RxUtil;
 import com.xiay.applib.util.rxjava.bean.RxIOTask;
 import com.xiay.applib.util.rxjava.bean.RxTask;
@@ -31,7 +31,7 @@ import gen.greendao.DBGuidePicDao;
 import rx.Observable;
 import rx.functions.Action1;
 
-import static com.xiay.applib.util.GreenDao.getDaoSession;
+import static com.xiay.applib.util.AppGreenDao.getDaoSession;
 
 /**
  * 启动页面
@@ -122,7 +122,7 @@ public abstract class AppLaunchAct extends AppActivity {
                                 } else if (!jArr.toString().equals(dbGuide.oldData)) {//如果服务器数据和本地数据不同相同下载图片，等图片全部下载成功后oldData改成newData,避免下载失败后无法重新下载问题
                                     dbGuide.newData = jArr.toString();
                                     dBGuideDao.save(dbGuide);
-                                    DBGuidePicDao dbGuidePicDao = GreenDao.getDaoSession().getDBGuidePicDao();
+                                    DBGuidePicDao dbGuidePicDao = AppGreenDao.getDaoSession().getDBGuidePicDao();
                                     List<DBGuidePic> dbGuidePics = dbGuidePicDao.queryBuilder().list();
                                     if (dbGuidePics.size() > 0) {//表示服务器修改了引导图，需重新下载
                                         startDownPic(jArr, dbGuidePicDao);

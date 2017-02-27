@@ -13,22 +13,22 @@ import gen.greendao.DaoSession;
  * Created by Xiay on 2016/9/6.
  */
 
-public class GreenDao {
+public class AppGreenDao {
     private DaoMaster.DevOpenHelper mHelper;
     private SQLiteDatabase db;
     private DaoMaster mDaoMaster;
     private Database mDataBase;
     private DaoSession mDaoSession;
-    private static GreenDao greenDao;
+    private static AppGreenDao appGreenDao;
 
     public  void init(Context content){
-        if (greenDao==null){
-            greenDao=this;
+        if (appGreenDao ==null){
+            appGreenDao =this;
             setDatabase(content);
         }
     }
     public static DaoSession getDaoSession(){
-        return greenDao.getSession();
+        return appGreenDao.getSession();
     }
 
     /**
@@ -50,6 +50,6 @@ public class GreenDao {
         return mDaoSession;
     }
     public static SQLiteDatabase getDb() {
-        return greenDao.db;
+        return appGreenDao.db;
     }
 }

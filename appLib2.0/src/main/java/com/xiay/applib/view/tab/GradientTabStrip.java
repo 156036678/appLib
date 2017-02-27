@@ -599,7 +599,68 @@ public class GradientTabStrip extends BaseGradientTabStrip {
         }
         canvas.restore();
     }
+    /**
+     * 绘制Tag
+     *
+     * @param canvas   画布
+     * @param position 子项坐标
+     */
+    protected void drawTag(Canvas canvas, int position,String text) {
 
+        mTextPaint.setTextSize(mTagTextSize);
+        mTextPaint.setColor(mTagTextColor);
+        mTextPaint.getTextBounds(text, 0, text.length(), mTextMeasureBounds);
+        final int textWidth = mTextMeasureBounds.width();
+        final int textHeight = mTextMeasureBounds.height();
+        final int tagBackgroundWidth = mTagBackground == null ?
+                0 : mTagBackground.getIntrinsicWidth();
+        final int tagBackgroundHeight = mTagBackground == null ?
+                0 : mTagBackground.getIntrinsicHeight();
+        int tagWidth;
+        int tagHeight;
+        switch (mTagMinSizeMode) {
+            default:
+            case TAG_MIN_SIZE_MODE_HAS_TEXT:
+                if (text.length() == 0) {
+                    tagWidth = Math.min(mTagMinWidth, tagBackgroundWidth);
+                    tagHeight = Math.min(mTagMinHeight, tagBackgroundHeight);
+                    break;
+                }
+            case TAG_MIN_SIZE_MODE_ALWAYS:
+                tagWidth = Math.max(
+                        textWidth + mTagLocation.getPaddingLeft() + mTagLocation.getPaddingRight(),
+                        Math.max(mTagMinWidth, tagBackgroundWidth));
+                tagHeight = Math.max(
+                        textHeight + mTagLocation.getPaddingTop() + mTagLocation.getPaddingBottom(),
+                        Math.max(mTagMinHeight, tagBackgroundHeight));
+                break;
+        }
+        final float centerX = ViewCompat.getPaddingStart(this) +
+                (mItemWidth + getIntervalWidth()) * ((float) position + 0.5f) +
+                ((position * 2 >= getItemCount() - 1 && getItemCount() % 2 == 0) ? mCenterGap : 0);
+        final float centerY = getPaddingTop()
+                + (getHeight() - getPaddingTop() - getPaddingBottom()) * 0.5f;
+        final float tagCenterX = centerX + mMaxDrawableWidth * 0.5f;
+        final float tagCenterY = centerY - mItemHeight * 0.5f + tagHeight * 0.5f;
+        final float tagLeft = tagCenterX - tagWidth * 0.5f + mTagLocation.getMarginLeft();
+        final float tagTop = tagCenterY - tagHeight * 0.5f - mTagLocation.getMarginBottom();
+        canvas.save();
+        canvas.translate(tagLeft, tagTop);
+        if (mTagBackground != null) {
+            mTagBackground.setBounds(0, 0, tagWidth, tagHeight);
+            mTagBackground.draw(canvas);
+        }
+        if (text.length() > 0) {
+            canvas.translate(mTagLocation.getPaddingLeft() +
+                    (tagWidth - mTagLocation.getPaddingLeft() - mTagLocation.getPaddingRight())
+                            * 0.5f, mTagLocation.getPaddingTop());
+            if (tagHeight > textHeight) {
+                canvas.translate(0, (tagHeight - textHeight) * 0.5f);
+            }
+            canvas.drawText(text, 0, -mTextMeasureBounds.top, mTextPaint);
+        }
+        canvas.restore();
+    }
     /**
      * 获取文字大小
      *

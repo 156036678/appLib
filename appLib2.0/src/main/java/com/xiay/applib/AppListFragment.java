@@ -5,6 +5,7 @@ import android.os.Build;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.GestureDetector;
 import android.view.HapticFeedbackConstants;
@@ -49,7 +50,7 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 	private boolean mIsShowPress = false;
 	private Set<Integer> childClickViewIds;
 	private Set<Integer> longClickViewIds;
-	protected VerticalSwipeRefreshLayout mSwipeRefreshLayout;
+	protected SwipeRefreshLayout mSwipeRefreshLayout;
 	protected int currentPage = 1;
 	private RecyclerViewUtil recyclerViewUtil;
 	public boolean isShowEnd = true;
@@ -75,31 +76,49 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 	 */
 	public void initListView(View v,int dividerHeight,int dividerColor,AD adapter,String emptyMessage) {
 		viewRoot=v;
-		rv_list = (RecyclerView) viewRoot.findViewById(R.id.rv_list);
-		if (dividerHeight!=-2){//如果不是默认
-			if (dividerColor==-1)
-				dividerColor=R.color.transparent;
-			if (dividerHeight!=-1)
-				rv_list.addItemDecoration(new HorizontalDividerItemDecoration.Builder(activity).size(ViewUtil.scaleValue(dividerHeight)).color(getResources().getColor(dividerColor)).build());
-		}else {
-			rv_list.addItemDecoration(new HorizontalDividerItemDecoration.Builder(getContext()).build());
+		RecyclerView.ItemDecoration itemDecoration = null;
+		rv_list = (RecyclerView) v.findViewById(R.id.rv_list);
+		if (dividerHeight != -2) {//如果不是默认
+			if (dividerColor == -1)
+				dividerColor = R.color.transparent;
+			if (dividerHeight != -1)
+				itemDecoration = new HorizontalDividerItemDecoration.Builder(activity).size(ViewUtil.scaleValue(dividerHeight)).color(getResources().getColor(dividerColor)).build();
+		} else {
+			itemDecoration = new HorizontalDividerItemDecoration.Builder(getContext()).size(ViewUtil.scaleValue(1)).color(getResources().getColor(R.color.gray_listLine)).build();
 		}
-		rv_list.setLayoutManager(new WrapContentLinearLayoutManager(activity));
+		initListView(v,itemDecoration, adapter, emptyMessage);
+	}
+	/**
+	 * 初始化列表
+	 *
+	 * @param itemDecoration 分割线样式
+	 * @param adapter
+	 * @param emptyMessage   adapter为空的时候提示文字
+	 */
+	public void initListView(View v,RecyclerView.ItemDecoration itemDecoration, AD adapter, String emptyMessage) {
+		rv_list = (RecyclerView) v.findViewById(R.id.rv_list);
+		if (itemDecoration != null)
+			rv_list.addItemDecoration(itemDecoration);
+		rv_list.setLayoutManager(new WrapContentLinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false));
+
 		//      添加动画
 		rv_list.setItemAnimator(new DefaultItemAnimator());
 		rv_list.addOnItemTouchListener(this);
 		mGestureDetector = new GestureDetectorCompat(rv_list.getContext(), new ItemTouchHelperGestureListener(rv_list));
-		this.adapter=  adapter;
-		if (emptyMessage!=null)
-			adapter.setEmptyView(getEmptyView(emptyMessage));
+		this.adapter = adapter;
 		rv_list.setAdapter(adapter);
-		mSwipeRefreshLayout = (VerticalSwipeRefreshLayout)viewRoot.findViewById(R.id.swipeLayout);
-		if (mSwipeRefreshLayout!=null){
+		View swipeRefreshLayout =  v.findViewById(R.id.swipeLayout);
+		if (swipeRefreshLayout instanceof VerticalSwipeRefreshLayout)
+			mSwipeRefreshLayout = (VerticalSwipeRefreshLayout) swipeRefreshLayout;
+		else
+			mSwipeRefreshLayout = (SwipeRefreshLayout) swipeRefreshLayout;
+		if (mSwipeRefreshLayout != null) {
 			mSwipeRefreshLayout.setColorSchemeResources(R.color.red, R.color.green, R.color.yellow);
 			mSwipeRefreshLayout.setOnRefreshListener(this);
 		}
-		recyclerViewUtil=new RecyclerViewUtil(activity,rv_list,adapter,mSwipeRefreshLayout,10,emptyMessage);
+		recyclerViewUtil = new RecyclerViewUtil(activity, rv_list, adapter, mSwipeRefreshLayout, 10, emptyMessage);
 	}
+
 	public  void setLoadMoreEnable(){
 		setLoadMoreEnable(true);
 	}

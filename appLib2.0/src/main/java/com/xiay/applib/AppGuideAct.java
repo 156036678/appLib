@@ -12,7 +12,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.xiay.applib.db.DBGuidePic;
-import com.xiay.applib.util.GreenDao;
+import com.xiay.applib.util.AppGreenDao;
 import com.xiay.applib.view.guide.ADPagerAdapter;
 import com.xiay.applib.view.guide.CirclePageIndicator;
 
@@ -47,7 +47,7 @@ public abstract class AppGuideAct extends AppActivity implements View.OnTouchLis
     }
     /**获取引导页图片*/
    public List<DBGuidePic> getGuidePics(){
-      return GreenDao.getDaoSession().getDBGuidePicDao().queryBuilder().list();
+      return AppGreenDao.getDaoSession().getDBGuidePicDao().queryBuilder().list();
    }
     /**设置引导页view*/
     public void setGuideView(ViewPager viewPager, List<View> views) {
