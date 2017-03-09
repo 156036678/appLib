@@ -112,11 +112,11 @@ public abstract class AppListAct<RQ, ADT, AD extends RecyclerBaseAdapter<ADT>> e
         this.adapter = adapter;
         rv_list.setAdapter(adapter);
         View swipeRefreshLayout = findViewById(R.id.swipeLayout);
-        if (swipeRefreshLayout instanceof VerticalSwipeRefreshLayout)
-            mSwipeRefreshLayout = (VerticalSwipeRefreshLayout) swipeRefreshLayout;
-        else
-            mSwipeRefreshLayout = (SwipeRefreshLayout) swipeRefreshLayout;
-        if (mSwipeRefreshLayout != null) {
+        if (swipeRefreshLayout != null) {
+            if (swipeRefreshLayout instanceof VerticalSwipeRefreshLayout)
+                mSwipeRefreshLayout = (VerticalSwipeRefreshLayout) swipeRefreshLayout;
+            else
+                mSwipeRefreshLayout = (SwipeRefreshLayout) swipeRefreshLayout;
             mSwipeRefreshLayout.setColorSchemeResources(R.color.red, R.color.green, R.color.yellow);
             mSwipeRefreshLayout.setOnRefreshListener(this);
         }

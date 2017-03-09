@@ -125,9 +125,11 @@ public class HanyuPinyinHelper {
 			//汉字转换成拼音
 			List<String> list=hanyuPinYinConvert(sortItem.getName());
 			String pinyin;
-			if (sortItem.getName().contains("重庆")){
+			String name=sortItem.getName();
+			if (name.contains("重庆")||name.contains("长安")){
 				pinyin = list.get(list.size()-1);
-			}else {
+			}
+			else {
 				pinyin = list.get(0);
 			}
 			String sortString = pinyin.substring(0, 1).toUpperCase();
