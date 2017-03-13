@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import cn.xiay.ui.Toast;
 import cn.xiay.util.ViewUtil;
 
 import static com.xiay.applib.view.recyclerview.RecyclerBaseAdapter.EMPTY_VIEW;
@@ -358,14 +359,26 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 
 	}
 	protected void addHeaderView(View header) {
+		if (recyclerViewUtil==null){
+			Toast.show("请先调用initListView方法");
+			return;
+		}
 		recyclerViewUtil.addHeaderView(header);
 	}
 
 	protected void addEmptyView(String emptyText) {
+		if (recyclerViewUtil==null){
+			Toast.show("请先调用initListView方法");
+			return;
+		}
 		recyclerViewUtil.addEmptyView(emptyText);
 	}
 
 	protected void addHeaderAndEmptyView(View header, String emptyText) {
+		if (recyclerViewUtil==null){
+			Toast.show("请先调用initListView方法");
+			return;
+		}
 		recyclerViewUtil.addHeaderAndEmptyView(header,emptyText);
 
 	}
@@ -375,6 +388,10 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 	}
 
 	protected void setListData(List<ADT> newData, String noDataText) {
+		if (recyclerViewUtil==null){
+			Toast.show("请先调用initListView方法");
+			return;
+		}
 		recyclerViewUtil.setCurrentPage(currentPage);
 		recyclerViewUtil.setListData(newData,noDataText);
 	}

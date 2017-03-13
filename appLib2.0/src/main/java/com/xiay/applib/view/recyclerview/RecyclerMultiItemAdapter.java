@@ -31,7 +31,7 @@ public abstract class RecyclerMultiItemAdapter<T extends MultiItemEntity> extend
 
     @Override
     protected int getDefItemViewType(int position) {
-        return (mData.get(position)).itemType;
+        return (mData.get(position)).getItemType();
     }
 
 

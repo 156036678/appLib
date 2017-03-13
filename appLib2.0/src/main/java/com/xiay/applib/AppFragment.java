@@ -116,7 +116,14 @@ public abstract class AppFragment extends Fragment {
     public void openActivity(Intent intent) {
         activity.openActivity(intent);
     }
-
+    /**
+     * 跳转activity
+     * @param clazz
+     * @param parmas 传值格式  key,value
+     */
+    public void openActivity(Class clazz,Object... parmas) {
+        activity.openActivity(clazz,parmas);
+    }
     protected void setPageTitle(String title) {
         if (title!=null)
         ((TextView) getView().findViewById(R.id.tv_pageHeadName)).setText(title);

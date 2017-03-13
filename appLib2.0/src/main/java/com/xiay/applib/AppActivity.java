@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.ArrayMap;
@@ -43,6 +44,7 @@ import cn.xiay.bean.HttpConfig;
 import cn.xiay.bean.MyDevice;
 import cn.xiay.dialog.BaseDialog;
 import cn.xiay.dialog.ClickListener;
+import cn.xiay.ui.Toast;
 import cn.xiay.util.AppActivityManager;
 import cn.xiay.util.SPUtil;
 import cn.xiay.util.SystemUtil;
@@ -62,18 +64,18 @@ public abstract class AppActivity extends AbHttpActivity {
     protected boolean hasRightBtn;
     private boolean isScaleView = true;
     protected int layoutId;
-    public RxManager rxManager=new RxManager();
+    public RxManager rxManager = new RxManager();
+
     protected void onCreate(Bundle paramBundle) {
         super.onCreate(paramBundle);
         int statusBarColor = getStatusBarColor();
-        if (layoutId!=-1){//如果是-1,说明是通过Binding方式设置的布局
+        if (layoutId != -1) {//如果是-1,说明是通过Binding方式设置的布局
             layoutId = setContentView();
             View view;
-            if (layoutId != 0){
+            if (layoutId != 0) {
                 super.setContentView(setContentView());
-                 view = ((ViewGroup) findViewById(android.R.id.content)).getChildAt(0);
-            }
-            else {
+                view = ((ViewGroup) findViewById(android.R.id.content)).getChildAt(0);
+            } else {
                 view = setNewContentView();
                 if (view != null)
                     super.setContentView(view);
@@ -94,7 +96,7 @@ public abstract class AppActivity extends AbHttpActivity {
                     ViewUtil.scaleContentView(content);
                 }
                 pageHead = (RelativeLayout) content.findViewById(R.id.rl_page_head);
-                if (pageHead != null&&getPageHeaderColorResources()!=0) {
+                if (pageHead != null && getPageHeaderColorResources() != 0) {
                     pageHead.setBackgroundColor(getPageHeaderColorResources());
                 }
             } else {
@@ -110,9 +112,10 @@ public abstract class AppActivity extends AbHttpActivity {
      *
      * @param needOffsetView 需要向下偏移的 View
      */
-    public  void setTranslucentForImageView( View needOffsetView) {
+    public void setTranslucentForImageView(View needOffsetView) {
         StatusBarUtil.setTranslucentForImageView(this, 0, needOffsetView);
     }
+
     /**
      * 设置状态栏颜色
      */
@@ -163,7 +166,7 @@ public abstract class AppActivity extends AbHttpActivity {
 
     protected void setPageTitle(String title, int textColor) {
         TextView tv_pageHeadName = (TextView) findViewById(R.id.tv_pageHeadName);
-        if (tv_pageHeadName!=null&&title != null) {
+        if (tv_pageHeadName != null && title != null) {
             tv_pageHeadName.setText(title);
             if (textColor != 0) {
                 tv_pageHeadName.setTextColor(textColor);
@@ -173,7 +176,7 @@ public abstract class AppActivity extends AbHttpActivity {
     }
 
     /**
-     * 是否自动适配屏幕 
+     * 是否自动适配屏幕
      * 默认ture
      */
     public void isAutoScaleView(boolean scaleView) {
@@ -247,7 +250,7 @@ public abstract class AppActivity extends AbHttpActivity {
      * @return
      */
     public Map<String, String> initParams(String method) {
-        Map<String, String> params= new ArrayMap<>();
+        Map<String, String> params = new ArrayMap<>();
         params.put("method", method);
 //        if (EncryptUtil.isEnable()) {//如果开启加密
 //            params = new ArrayMap<>();
@@ -331,13 +334,13 @@ public abstract class AppActivity extends AbHttpActivity {
             ConfigUrl.url = SPUtil.getString(ConfigUrl.APP_CONFIG_URL);
         }
         if (request.getUrl() == null) {
-            if (getUrl()==null)
+            if (getUrl() == null)
                 request.setUrl(HttpConfig.UrlHead + ConfigUrl.url);
             else
                 request.setUrl(getUrl());
         }
         String time = System.currentTimeMillis() + "";
-        ArrayMap  fixedParams = new ArrayMap<>();
+        ArrayMap fixedParams = new ArrayMap<>();
         fixedParams.put("time", time + "");
         fixedParams.put("plat", "2");
         fixedParams.put("version", AppUtil.getVersionCode(this) + "");
@@ -347,13 +350,13 @@ public abstract class AppActivity extends AbHttpActivity {
         fixedParams.put("sign", MyDevice.IMEI);
         fixedParams.put("method", params.get("method"));
         params.remove("method");
-        fixedParams.put("data",new Gson().toJson(params));
+        fixedParams.put("data", new Gson().toJson(params));
         params.put("method", (String) fixedParams.get("method"));
         Map<String, String> paramsFinal = new ArrayMap<>();
         if (EncryptUtil.isEnable()) {//如果开启加密
             paramsFinal.put("params", EncryptUtil.encrypt(new Gson().toJson(fixedParams)));
-        }else {
-            paramsFinal.put("params",new Gson().toJson(fixedParams));
+        } else {
+            paramsFinal.put("params", new Gson().toJson(fixedParams));
         }
         sendRequest(what, request, paramsFinal, dialogMsg, false, httpCallback);
 //        if (EncryptUtil.isEnable()) {//如果开启加密
@@ -377,7 +380,8 @@ public abstract class AppActivity extends AbHttpActivity {
 //            sendRequest(what, request, params, dialogMsg, false, httpCallback);
 //        }
     }
-    public String getUrl(){
+
+    public String getUrl() {
         return null;
     }
 
@@ -395,21 +399,62 @@ public abstract class AppActivity extends AbHttpActivity {
     public void openActivity(Class clazz) {
         openActivity(new Intent(this, clazz));
     }
+
+    /**
+     * 跳转activity
+     *
+     * @param clazz
+     * @param parmas 传值格式  key,value
+     */
+
+    public void openActivity(Class clazz, Object... parmas) {
+        if (parmas != null) {
+            Intent i = new Intent(this, clazz);
+            int parmasLenth = parmas.length;
+            if (parmasLenth % 2 != 0) {
+                Toast.show("参数格式为key,value");
+            } else {
+                parmasLenth = parmasLenth / 2;
+                for (int j = 0; j < parmasLenth; j++) {
+                    Object parmas1 = parmas[j + j];
+                    Object parmas2 = parmas[j + j + 1];
+                    if (parmas1 instanceof String) {
+                        String key=(String) parmas1;
+                        if (parmas2 instanceof String)
+                            i.putExtra(key, (String) parmas2);
+                        else if (parmas2 instanceof Integer)
+                            i.putExtra(key, (int) parmas2);
+                        else if (parmas2 instanceof Boolean)
+                            i.putExtra(key, (boolean) parmas2);
+                        else if (parmas2 instanceof Parcelable)
+                            i.putExtra(key, (Parcelable) parmas2);
+
+                    } else {
+                        Toast.show("参数key类型不对");
+                        return;
+                    }
+                }
+            }
+            openActivity(i);
+        }
+    }
+
     /**
      * 跳转activity
      */
-    public void openActivitys(Intent [] intents) {
+    public void openActivitys(Intent[] intents) {
         overridePendingTransition(R.anim.right_in, R.anim.left_out);
         startActivities(intents);
     }
+
     /**
      * 跳转activity
      */
     public void openActivitys(Class... classes) {
-        Intent [] intents=new Intent[classes.length];
-        for (int i = 0; i <classes.length ; i++) {
-            Intent intent=new Intent(this,classes[i]);
-            intents[i]=intent;
+        Intent[] intents = new Intent[classes.length];
+        for (int i = 0; i < classes.length; i++) {
+            Intent intent = new Intent(this, classes[i]);
+            intents[i] = intent;
         }
         overridePendingTransition(R.anim.right_in, R.anim.left_out);
         startActivities(intents);
@@ -434,6 +479,7 @@ public abstract class AppActivity extends AbHttpActivity {
         finish();
         overridePendingTransition(R.anim.left_in, R.anim.right_out);
     }
+
     /**
      * 替换Fragment
      *
@@ -465,7 +511,7 @@ public abstract class AppActivity extends AbHttpActivity {
     protected void onDestroy() {
         if (getDialog().isShowing())
             getDialog().dismiss();
-        if (rxManager!=null)
+        if (rxManager != null)
             rxManager.clear();
         super.onDestroy();
     }
@@ -474,27 +520,27 @@ public abstract class AppActivity extends AbHttpActivity {
      * 添加返回按钮
      */
     public ImageButton addBackBtn(int imageResource) {
-            if (pageHead==null)
-                 pageHead = findView(rl_page_head);
-            if (pageHead==null)
-                return null;
-            btn_back = new ImageButton(this);
-            //btn_back.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.MATCH_PARENT));
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-            params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-            btn_back.setPadding(30, 0, 30, 0);
-            btn_back.setBackgroundDrawable(null);
-            if (backImageResId == 0)
-                btn_back.setImageResource(imageResource);
-            else
-                btn_back.setImageResource(backImageResId);
-            pageHead.addView(btn_back, params);
-            btn_back.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    closeActivity();
-                }
-            });
+        if (pageHead == null)
+            pageHead = findView(rl_page_head);
+        if (pageHead == null)
+            return null;
+        btn_back = new ImageButton(this);
+        //btn_back.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.MATCH_PARENT));
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+        params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        btn_back.setPadding(30, 0, 30, 0);
+        btn_back.setBackgroundDrawable(null);
+        if (backImageResId == 0)
+            btn_back.setImageResource(imageResource);
+        else
+            btn_back.setImageResource(backImageResId);
+        pageHead.addView(btn_back, params);
+        btn_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeActivity();
+            }
+        });
         return btn_back;
     }
 
@@ -515,6 +561,7 @@ public abstract class AppActivity extends AbHttpActivity {
         }
         return view;
     }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (null != this.getCurrentFocus()) {
