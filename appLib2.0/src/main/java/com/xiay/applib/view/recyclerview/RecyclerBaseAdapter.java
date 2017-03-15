@@ -286,6 +286,11 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
         return mData.size()==0;
 
     }
+    public boolean remove(T data) {
+        mData.remove(data);
+        return mData.size()==0;
+
+    }
 
     /**
      * insert  a item associated with the specified position of adapter

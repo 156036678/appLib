@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import com.nohttp.extra.HttpListener;
 import com.nohttp.rest.Response;
-import com.xiay.applib.util.RecyclerViewUtil;
+import com.xiay.applib.view.recyclerview.util.RecyclerViewHelper;
 import com.xiay.applib.view.VerticalSwipeRefreshLayout;
 import com.xiay.applib.view.recyclerview.RecyclerBaseAdapter;
 import com.xiay.applib.view.recyclerview.RecyclerViewHolder;
@@ -53,7 +53,7 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 	private Set<Integer> longClickViewIds;
 	protected SwipeRefreshLayout mSwipeRefreshLayout;
 	protected int currentPage = 1;
-	private RecyclerViewUtil recyclerViewUtil;
+	private RecyclerViewHelper recyclerViewHelper;
 	public boolean isShowEnd = true;
 	View viewRoot;
 
@@ -117,7 +117,7 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 			mSwipeRefreshLayout.setColorSchemeResources(R.color.red, R.color.green, R.color.yellow);
 			mSwipeRefreshLayout.setOnRefreshListener(this);
 		}
-		recyclerViewUtil = new RecyclerViewUtil(activity, rv_list, adapter, mSwipeRefreshLayout, 10, emptyMessage);
+		recyclerViewHelper = new RecyclerViewHelper(activity, rv_list, adapter, mSwipeRefreshLayout, 10, emptyMessage);
 	}
 
 	public  void setLoadMoreEnable(){
@@ -359,27 +359,27 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 
 	}
 	protected void addHeaderView(View header) {
-		if (recyclerViewUtil==null){
+		if (recyclerViewHelper ==null){
 			Toast.show("请先调用initListView方法");
 			return;
 		}
-		recyclerViewUtil.addHeaderView(header);
+		recyclerViewHelper.addHeaderView(header);
 	}
 
 	protected void addEmptyView(String emptyText) {
-		if (recyclerViewUtil==null){
+		if (recyclerViewHelper ==null){
 			Toast.show("请先调用initListView方法");
 			return;
 		}
-		recyclerViewUtil.addEmptyView(emptyText);
+		recyclerViewHelper.addEmptyView(emptyText);
 	}
 
 	protected void addHeaderAndEmptyView(View header, String emptyText) {
-		if (recyclerViewUtil==null){
+		if (recyclerViewHelper ==null){
 			Toast.show("请先调用initListView方法");
 			return;
 		}
-		recyclerViewUtil.addHeaderAndEmptyView(header,emptyText);
+		recyclerViewHelper.addHeaderAndEmptyView(header,emptyText);
 
 	}
 
@@ -388,20 +388,20 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 	}
 
 	protected void setListData(List<ADT> newData, String noDataText) {
-		if (recyclerViewUtil==null){
+		if (recyclerViewHelper ==null){
 			Toast.show("请先调用initListView方法");
 			return;
 		}
-		recyclerViewUtil.setCurrentPage(currentPage);
-		recyclerViewUtil.setListData(newData,noDataText);
+		recyclerViewHelper.setCurrentPage(currentPage);
+		recyclerViewHelper.setListData(newData,noDataText);
 	}
 	@Override
 	public void onFailed(int i, Response response) {
-		recyclerViewUtil.onFailed();
+		recyclerViewHelper.onFailed();
 	}
 	/**设置每页加载多少条数据*/
 	protected  void  setPerPageSize(int perPageSize){
-		recyclerViewUtil.setPerPageSize(perPageSize);
+		recyclerViewHelper.setPerPageSize(perPageSize);
 	}
 	public abstract void getListData();
 }
