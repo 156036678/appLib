@@ -35,6 +35,6 @@ public abstract   class OnItemClickListener<T extends RecyclerBaseAdapter> exten
 
     }
     public abstract void itemClick(T adapter, View view, int position);
-    public  void itemChildClick(T adapter, View view, int position){};
+    public  void itemChildClick(T adapter, View view, int position){}
     public  void itemLongClick(T adapter, View view, int position){}
 }

@@ -1,41 +1,19 @@
 package com.xiay.applib;
 
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.GestureDetector;
-import android.view.HapticFeedbackConstants;
-import android.view.MotionEvent;
 import android.view.View;
 
 import com.nohttp.extra.HttpListener;
 import com.nohttp.rest.Response;
-import com.xiay.applib.view.recyclerview.util.RecyclerViewHelper;
-import com.xiay.applib.view.VerticalSwipeRefreshLayout;
 import com.xiay.applib.view.recyclerview.RecyclerBaseAdapter;
-import com.xiay.applib.view.recyclerview.RecyclerViewHolder;
-import com.xiay.applib.view.recyclerview.WrapContentLinearLayoutManager;
 import com.xiay.applib.view.recyclerview.listener.OnListItemClickListener;
-import com.xiay.applib.view.recyclerview.recyclerviewflexibledivider.GridSpacingItemDecoration;
-import com.xiay.applib.view.recyclerview.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
+import com.xiay.applib.view.recyclerview.util.RecyclerViewHelper;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import cn.xiay.ui.Toast;
-import cn.xiay.util.ViewUtil;
-
-import static com.nohttp.NoHttp.getContext;
-import static com.xiay.applib.view.recyclerview.RecyclerBaseAdapter.EMPTY_VIEW;
-import static com.xiay.applib.view.recyclerview.RecyclerBaseAdapter.FOOTER_VIEW;
-import static com.xiay.applib.view.recyclerview.RecyclerBaseAdapter.HEADER_VIEW;
-import static com.xiay.applib.view.recyclerview.RecyclerBaseAdapter.LOADING_VIEW;
 
 /***
  * @param <RQ>请求数据类型
@@ -43,20 +21,11 @@ import static com.xiay.applib.view.recyclerview.RecyclerBaseAdapter.LOADING_VIEW
  * @param <AD>Adapter 类型
  * @author Xiay
  */
-public abstract class AppListAct<RQ, ADT, AD extends RecyclerBaseAdapter<ADT>> extends AppActivity implements RecyclerView.OnItemTouchListener, OnListItemClickListener<ADT, AD>, SwipeRefreshLayout.OnRefreshListener, RecyclerBaseAdapter.RequestLoadMoreListener, HttpListener<RQ> {
+public abstract class AppListAct<RQ, ADT, AD extends RecyclerBaseAdapter<ADT>> extends AppActivity implements  OnListItemClickListener<ADT, AD>, SwipeRefreshLayout.OnRefreshListener, RecyclerBaseAdapter.RequestLoadMoreListener, HttpListener<RQ> {
     public RecyclerView rv_list;
     public AD adapter;
-    private GestureDetectorCompat mGestureDetector;
-    private View mPressedView = null;
-    private boolean mIsPrepressed = false;
-    private boolean mIsShowPress = false;
-    private Set<Integer> childClickViewIds;
-    private Set<Integer> longClickViewIds;
-    protected SwipeRefreshLayout mSwipeRefreshLayout;
     protected int currentPage = 1;
-
     private RecyclerViewHelper recyclerViewHelper;
-
     @Override
     protected void onCreate(Bundle paramBundle) {
         super.onCreate(paramBundle);
@@ -80,19 +49,9 @@ public abstract class AppListAct<RQ, ADT, AD extends RecyclerBaseAdapter<ADT>> e
      * @param emptyMessage  adapter为空的时候提示文字
      */
     public void initListView(int dividerHeight, int dividerColor, AD adapter, String emptyMessage) {
-        RecyclerView.ItemDecoration itemDecoration = null;
-        rv_list = (RecyclerView) findViewById(R.id.rv_list);
-        if (dividerHeight != -2) {//如果不是默认
-            if (dividerColor == -1)
-                dividerColor = R.color.transparent;
-            if (dividerHeight != -1)
-                itemDecoration = new HorizontalDividerItemDecoration.Builder(this).size(ViewUtil.scaleValue(dividerHeight)).color(getResources().getColor(dividerColor)).build();
-        } else {
-            itemDecoration = new HorizontalDividerItemDecoration.Builder(getContext()).size(ViewUtil.scaleValue(1)).color(getResources().getColor(R.color.gray_listLine)).build();
-        }
-        initListView(itemDecoration, adapter, emptyMessage);
+        initView(adapter, emptyMessage);
+        recyclerViewHelper.setItemDecoration(recyclerViewHelper.getItemDecoration(dividerHeight,dividerColor));
     }
-
     /**
      * 初始化列表
      *
@@ -101,38 +60,28 @@ public abstract class AppListAct<RQ, ADT, AD extends RecyclerBaseAdapter<ADT>> e
      * @param emptyMessage   adapter为空的时候提示文字
      */
     public void initListView(RecyclerView.ItemDecoration itemDecoration, AD adapter, String emptyMessage) {
-        rv_list = (RecyclerView) findViewById(R.id.rv_list);
-        if (itemDecoration != null)
-            rv_list.addItemDecoration(itemDecoration);
-        rv_list.setLayoutManager(new WrapContentLinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-
-        //      添加动画
-        rv_list.setItemAnimator(new DefaultItemAnimator());
-        rv_list.addOnItemTouchListener(this);
-        mGestureDetector = new GestureDetectorCompat(rv_list.getContext(), new ItemTouchHelperGestureListener(rv_list));
-        this.adapter = adapter;
-        rv_list.setAdapter(adapter);
-        View swipeRefreshLayout = findViewById(R.id.swipeLayout);
-        if (swipeRefreshLayout != null) {
-            if (swipeRefreshLayout instanceof VerticalSwipeRefreshLayout)
-                mSwipeRefreshLayout = (VerticalSwipeRefreshLayout) swipeRefreshLayout;
-            else
-                mSwipeRefreshLayout = (SwipeRefreshLayout) swipeRefreshLayout;
-            mSwipeRefreshLayout.setColorSchemeResources(R.color.red, R.color.green, R.color.yellow);
-            mSwipeRefreshLayout.setOnRefreshListener(this);
-        }
-        recyclerViewHelper = new RecyclerViewHelper(this, rv_list, adapter, mSwipeRefreshLayout, 10, emptyMessage);
+        initView(adapter, emptyMessage);
+        recyclerViewHelper.setItemDecoration(itemDecoration);
     }
-
+    private void initView(AD adapter, String emptyMessage) {
+        rv_list = (RecyclerView) findViewById(R.id.rv_list);
+        this.adapter=adapter;
+        View swipeLayout=findViewById(R.id.swipeLayout);
+        recyclerViewHelper = new RecyclerViewHelper(this, rv_list, adapter,this, emptyMessage);
+        if (swipeLayout!=null)
+            recyclerViewHelper.setOnRefreshListener(swipeLayout,this);
+    }
     /**
      * 设置表格布局横向item个数
      *
      * @param count
      */
     public void setGridLayoutCount(int count) {
-        rv_list.setLayoutManager(new GridLayoutManager(this, count));
-        rv_list.addItemDecoration(new GridSpacingItemDecoration(count, 10, false));
-        //	rv_list.addItemDecoration(new GridSpacingItemDecoration(3, ViewUtil.scaleValue(6), false));
+        if (recyclerViewHelper ==null){
+            Toast.show("请先调用initListView方法");
+            return;
+        }
+        recyclerViewHelper.setGridLayoutCount(count);
     }
 
     public void setLoadMoreEnable() {
@@ -143,24 +92,7 @@ public abstract class AppListAct<RQ, ADT, AD extends RecyclerBaseAdapter<ADT>> e
         recyclerViewHelper.setLoadMoreEnable(isShowEnd, this);
     }
 
-    @Override
-    public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-        if (rv_list == null) {
-            this.rv_list = rv;
-        }
-        if (!mGestureDetector.onTouchEvent(e) && e.getActionMasked() == MotionEvent.ACTION_UP && mIsShowPress) {
-            if (mPressedView != null) {
-                RecyclerViewHolder vh = (RecyclerViewHolder) rv_list.getChildViewHolder(mPressedView);
-                if (vh == null || vh.getItemViewType() != LOADING_VIEW) {
-                    mPressedView.setPressed(false);
-                }
-                mPressedView = null;
-            }
-            mIsShowPress = false;
-            mIsPrepressed = false;
-        }
-        return false;
-    }
+
 
     @Override
     public void onRefresh() {
@@ -173,191 +105,6 @@ public abstract class AppListAct<RQ, ADT, AD extends RecyclerBaseAdapter<ADT>> e
     public void onLoadMore() {
         currentPage++;
         getListData();
-    }
-
-    private class ItemTouchHelperGestureListener extends GestureDetector.SimpleOnGestureListener {
-
-        private RecyclerView rv_list;
-
-        @Override
-        public boolean onDown(MotionEvent e) {
-            mIsPrepressed = true;
-            mPressedView = rv_list.findChildViewUnder(e.getX(), e.getY());
-            super.onDown(e);
-            return false;
-        }
-
-        @Override
-        public void onShowPress(MotionEvent e) {
-            if (mIsPrepressed && mPressedView != null) {
-//                mPressedView.setPressed(true);
-                mIsShowPress = true;
-            }
-            super.onShowPress(e);
-        }
-
-        public ItemTouchHelperGestureListener(RecyclerView rv_list) {
-            this.rv_list = rv_list;
-        }
-
-        @Override
-        public boolean onSingleTapUp(MotionEvent e) {
-            if (mIsPrepressed && mPressedView != null) {
-
-                final View pressedView = mPressedView;
-                RecyclerViewHolder vh = (RecyclerViewHolder) rv_list.getChildViewHolder(pressedView);
-
-                if (isHeaderOrFooterPosition(vh.getLayoutPosition())) {
-                    return false;
-                }
-                childClickViewIds = vh.getChildClickViewIds();
-
-                if (childClickViewIds != null && childClickViewIds.size() > 0) {
-                    for (Iterator it = childClickViewIds.iterator(); it.hasNext(); ) {
-                        View childView = pressedView.findViewById((Integer) it.next());
-                        if (inRangeOfView(childView, e) && childView.isEnabled()) {
-                            setPressViewHotSpot(e, childView);
-                            childView.setPressed(true);
-                            int pos = vh.getLayoutPosition() - adapter.getHeaderLayoutCount();
-                            onItemChildClick(adapter, childView, adapter.getItem(pos), pos);
-                            resetPressedView(childView);
-                            return true;
-                        } else {
-                            childView.setPressed(false);
-                        }
-                    }
-                    setPressViewHotSpot(e, pressedView);
-                    mPressedView.setPressed(true);
-                    for (Iterator it = childClickViewIds.iterator(); it.hasNext(); ) {
-                        View childView = pressedView.findViewById((Integer) it.next());
-                        childView.setPressed(false);
-                    }
-                    int pos = vh.getLayoutPosition() - adapter.getHeaderLayoutCount();
-                    onItemClick(adapter, pressedView, adapter.getItem(pos), pos);
-                } else {
-                    setPressViewHotSpot(e, pressedView);
-                    mPressedView.setPressed(true);
-                    for (Iterator it = childClickViewIds.iterator(); it.hasNext(); ) {
-                        View childView = pressedView.findViewById((Integer) it.next());
-                        childView.setPressed(false);
-                    }
-                    int pos = vh.getLayoutPosition() - adapter.getHeaderLayoutCount();
-                    onItemClick(adapter, pressedView, adapter.getItem(pos), pos);
-                }
-                resetPressedView(pressedView);
-
-            }
-            return true;
-        }
-
-        private void resetPressedView(final View pressedView) {
-            if (pressedView != null) {
-                pressedView.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (pressedView != null) {
-                            pressedView.setPressed(false);
-                        }
-
-                    }
-                }, 100);
-            }
-
-            mIsPrepressed = false;
-            mPressedView = null;
-        }
-
-        @Override
-        public void onLongPress(MotionEvent e) {
-            boolean isChildLongClick = false;
-            if (mIsPrepressed && mPressedView != null) {
-                mPressedView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-                RecyclerViewHolder vh = (RecyclerViewHolder) rv_list.getChildViewHolder(mPressedView);
-                if (!isHeaderOrFooterPosition(vh.getLayoutPosition())) {
-                    longClickViewIds = vh.getItemChildLongClickViewIds();
-                    if (longClickViewIds != null && longClickViewIds.size() > 0) {
-                        for (Iterator it = longClickViewIds.iterator(); it.hasNext(); ) {
-                            View childView = mPressedView.findViewById((Integer) it.next());
-                            if (inRangeOfView(childView, e) && childView.isEnabled()) {
-                                setPressViewHotSpot(e, childView);
-                                int pos = vh.getLayoutPosition() - adapter.getHeaderLayoutCount();
-                                onItemChildLongClick(adapter, childView, adapter.getItem(pos), pos);
-                                childView.setPressed(true);
-                                mIsShowPress = true;
-                                isChildLongClick = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!isChildLongClick) {
-                        int pos = vh.getLayoutPosition() - adapter.getHeaderLayoutCount();
-                        onItemLongClick(adapter, mPressedView, adapter.getItem(pos), pos);
-                        setPressViewHotSpot(e, mPressedView);
-                        mPressedView.setPressed(true);
-                        for (Iterator it = longClickViewIds.iterator(); it.hasNext(); ) {
-                            View childView = mPressedView.findViewById((Integer) it.next());
-                            childView.setPressed(false);
-                        }
-                        mIsShowPress = true;
-                    }
-
-                }
-
-            }
-        }
-    }
-
-    private void setPressViewHotSpot(final MotionEvent e, final View mPressedView) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            /**
-             * when   click   Outside the region  ,mPressedView is null
-             */
-            if (mPressedView != null && mPressedView.getBackground() != null) {
-                mPressedView.getBackground().setHotspot(e.getRawX(), e.getY() - mPressedView.getY());
-            }
-        }
-    }
-
-    public boolean inRangeOfView(View view, MotionEvent ev) {
-        int[] location = new int[2];
-        if (view.getVisibility() != View.VISIBLE) {
-            return false;
-        }
-        view.getLocationOnScreen(location);
-        int x = location[0];
-        int y = location[1];
-        if (ev.getRawX() < x
-                || ev.getRawX() > (x + view.getWidth())
-                || ev.getRawY() < y
-                || ev.getRawY() > (y + view.getHeight())) {
-            return false;
-        }
-        return true;
-    }
-
-    private boolean isHeaderOrFooterPosition(int position) {
-        /**
-         *  have a headview and EMPTY_VIEW FOOTER_VIEW LOADING_VIEW
-         */
-        if (adapter == null) {
-            if (rv_list != null) {
-                adapter = (AD) rv_list.getAdapter();
-            } else {
-                return false;
-            }
-        }
-        int type = adapter.getItemViewType(position);
-        return (type == EMPTY_VIEW || type == HEADER_VIEW || type == FOOTER_VIEW || type == LOADING_VIEW);
-    }
-
-    @Override
-    public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-        mGestureDetector.onTouchEvent(e);
-    }
-
-    @Override
-    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
     }
 
     protected void addHeaderView(View header) {
