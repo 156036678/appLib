@@ -106,6 +106,7 @@ public class UploadUtil {
 
         @Override
         public void onCancel(int what) {// 这个文件的上传被取消时。
+            progressDialog.dismiss();
         }
 
         @Override
@@ -123,6 +124,8 @@ public class UploadUtil {
 
         @Override
         public void onError(int what, Exception exception) {// 文件上传发生错误。
+            exception.printStackTrace();
+            progressDialog.dismiss();
             Toast.show("上传失败");
         }
     };

@@ -1050,7 +1050,6 @@ public class GradientTabStrip extends BaseGradientTabStrip {
          * @return 必须非空
          */
         public abstract Drawable getSelectedDrawable(int position, Context context);
-
         public boolean isTagEnable(int position) {
             return false;
         }
@@ -1086,5 +1085,6 @@ public class GradientTabStrip extends BaseGradientTabStrip {
         public Drawable getSelectedDrawable(int position, Context context) {
             return selected;
         }
+
     }
 }

@@ -17,8 +17,6 @@ import com.nohttp4okhttp.OkHttpNetworkExecutor;
 import com.tencent.bugly.crashreport.CrashReport;
 import com.xiay.applib.bean.AppAction;
 import com.xiay.applib.ui.dialog.MyToast;
-import com.xiay.applib.util.AppUtil;
-import com.xiay.applib.util.AppGreenDao;
 import com.xiay.applib.util.rxjava.RxBus;
 import com.xiay.applib.util.rxjava.RxUtil;
 import com.xiay.applib.util.rxjava.bean.RxTask;
@@ -26,6 +24,7 @@ import com.xiay.applib.util.rxjava.bean.RxTask;
 import cn.xiay.bean.MyDevice;
 import cn.xiay.ui.Toast;
 import cn.xiay.util.SPUtil;
+import cn.xiay.util.SystemUtil;
 import cn.xiay.util.log.Log;
 
 public  class AppApplication extends Application {
@@ -38,14 +37,12 @@ public  class AppApplication extends Application {
 		context=getApplicationContext();
 		// 获取当前包名
 		String packageName = context.getPackageName();
-		if (packageName.equals(AppUtil.getProcessName(android.os.Process.myPid()))) {
-			Log.i("xxxxx"+AppUtil.getProcessName(android.os.Process.myPid()));
+		if (packageName.equals(SystemUtil.getInstance().getProcessName(android.os.Process.myPid()))) {
 			RxUtil.executeRxTask(new RxTask() {
 				@Override
 				public void doInIOThread() {
 					SPUtil.init(context);
 					displayMetrics(context);
-					new AppGreenDao().init(context);
 					//NoHttp.initialize(AppTinkerApplication.this);
 					// 如果你需要自定义配置：
 					NoHttp.initialize(context, new Config()
@@ -64,7 +61,7 @@ public  class AppApplication extends Application {
 					);
 					//  SealAppContext.init(context);
 					//获取手机IMEI
-					versionCode= AppUtil.getVersionCode(context);
+					versionCode= SystemUtil.getInstance().getVersionCode(context);
 					MyDevice.IMEI = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
 
 					if (MyDevice.IMEI!=null)
@@ -83,7 +80,7 @@ public  class AppApplication extends Application {
 		}
 
 		super.onCreate();
-	//	Log.i("zzzz onCreate="+AppUtil.getCurProcessName(context));
+	//	Log.i("zzzz onCreate="+SystemUtil.getInstance().getCurProcessName(context));
 
 	}
 	public  void initData(){}

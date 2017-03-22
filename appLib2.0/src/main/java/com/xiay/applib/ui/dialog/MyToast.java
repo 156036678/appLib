@@ -13,6 +13,8 @@ import com.xiay.applib.R;
 
 import cn.xiay.util.ViewUtil;
 
+import static com.xiay.applib.R.mipmap.toast_error;
+
 public class MyToast {
     private static Toast toast;
     private static ImageView toastImage;
@@ -62,16 +64,16 @@ public class MyToast {
     }
     public static void showError(int resId){
         if (okIcon!=0){
-            show(resId,okIcon);
+            show(resId,toast_error);
         }else {
-            show(resId,R.mipmap.toast_ok);
+            show(resId, toast_error);
         }
     }
     public static void showError(String text){
         if (errorIcon!=0){
             show(text,errorIcon);
         }else {
-            show(text,R.mipmap.toast_error);
+            show(text, toast_error);
         }
     }
 }

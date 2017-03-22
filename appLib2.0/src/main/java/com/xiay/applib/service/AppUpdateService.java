@@ -29,7 +29,6 @@ import android.widget.Toast;
 import com.xiay.applib.R;
 import com.xiay.applib.bean.AppUpdateInfo;
 import com.xiay.applib.receiver.AppReceiver;
-import com.xiay.applib.util.AppUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -94,7 +93,7 @@ public class AppUpdateService extends Service {
   /**创建文件是否成功 成功返回true */
 	private boolean  createFile(String appName) {
 		if (android.os.Environment.MEDIA_MOUNTED.equals(android.os.Environment.getExternalStorageState())) {
-			 savePath = new File(  SystemUtil.getSDPath(getApplication())+ "/updateApp/");
+			 savePath = new File(  SystemUtil.getInstance().getSDPath(getApplication())+ "/updateApp/");
 			filePath = new File(savePath + "/" + appName + ".apk");
 			if (!savePath.exists()) {
 				savePath.mkdirs();
@@ -128,7 +127,7 @@ public class AppUpdateService extends Service {
 
 					/*********下载完成，点击安装***********/
 					String strFilePath=filePath.getAbsolutePath();
-					AppUtil.installApk(getApplication(),strFilePath);
+					SystemUtil.getInstance().installApk(getApplication(),strFilePath);
 					contentView.setTextViewText(R.id.notificationTitle,"下载完成，点击安装");
 					contentView.setTextViewText(R.id.notificationPercent,"100%");
 					contentView.setProgressBar(R.id.notificationProgress, 100, 100, false);

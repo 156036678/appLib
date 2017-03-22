@@ -32,10 +32,10 @@ import com.nohttp.error.UnKnownHostError;
 import com.nohttp.extra.HttpUtil;
 import com.xiay.applib.R;
 import com.xiay.applib.bean.DataGuidePic;
-import com.xiay.applib.db.DBGuide;
-import com.xiay.applib.db.DBGuidePic;
-import com.xiay.applib.util.AppGreenDao;
-import com.xiay.applib.util.AppUtil;
+import com.xiay.applib.db.bean.TBGuide;
+import com.xiay.applib.db.bean.TBGuidePic;
+import com.xiay.applib.db.dao.GuideDao;
+import com.xiay.applib.db.dao.GuidePicDao;
 import com.xiay.applib.util.rxjava.RxUtil;
 import com.xiay.applib.util.rxjava.bean.RxIOTask;
 
@@ -43,11 +43,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import cn.xiay.util.SystemUtil;
 import cn.xiay.util.log.Log;
-import gen.greendao.DBGuideDao;
-import gen.greendao.DBGuidePicDao;
-
-import static com.xiay.applib.util.AppGreenDao.getDaoSession;
 /*##################################################
                        _ooOoo_
                       o8888888o
@@ -108,7 +105,7 @@ public class AppDownPicService extends Service {
                     @Override
                     public void doInIOThread() {
                         donePics = new ArrayList<>();
-                        String url, fileName , downPath = AppUtil.getDataDirectory(getApplicationContext()).getAbsolutePath();
+                        String url, fileName , downPath = SystemUtil.getInstance().getDataDirectory(getApplicationContext()).getAbsolutePath();
                         picCount = guidePic.pics.size();
                         for (int i = 0; i < guidePic.pics.size(); i++) {
                             url = guidePic.pics.get(i);
@@ -202,22 +199,22 @@ public class AppDownPicService extends Service {
                                 HttpUtil.getDownloadInstance(1).add(i, mDownloadRequests.get(downErrorIndex.get(i)), listener);
                             }
                         }else {//保存下载路径到数据库
-                            DBGuidePicDao dBGuidePicDao=  AppGreenDao.getDaoSession().getDBGuidePicDao();
-                            dBGuidePicDao.deleteAll();
-                            ArrayList<DBGuidePic> dBGuidePics=new ArrayList<>();
+                            GuidePicDao guidePicDao=new GuidePicDao();
+                            guidePicDao.deleteAll();
+                            guidePicDao.deleteAll();
+                            ArrayList<TBGuidePic> dBGuidePics=new ArrayList<>();
                             for (String url: donePics) {
-                                dBGuidePics.add(new DBGuidePic(url));
+                                dBGuidePics.add(new TBGuidePic(url));
                             }
-                            dBGuidePicDao.insertInTx(dBGuidePics);
-
+                            guidePicDao.insert(dBGuidePics);
                             //更新最新数据
-                            DBGuideDao dBGuideDao = getDaoSession().getDBGuideDao();
-                            DBGuide dbGuide = dBGuideDao.queryBuilder().unique();
+                            GuideDao guideDao=new GuideDao();
+                            TBGuide dbGuide = guideDao.queryForFirst();
                             if (dbGuide!=null){
                                 if (null!=dbGuide.newData)
                                    dbGuide.oldData=dbGuide.newData;
                                 dbGuide.isShowNewGuide=true;
-                                dBGuideDao.save(dbGuide);
+                                guideDao.save(dbGuide);
                             }
                         }
                         Log.i("xxxx  allDownloadFinish="+(donePics.size() == picCount));

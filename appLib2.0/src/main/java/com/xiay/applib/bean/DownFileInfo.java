@@ -4,9 +4,9 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.xiay.applib.util.AppUtil;
-
 import java.io.File;
+
+import cn.xiay.util.SystemUtil;
 
 /**
  * @Xaiy
@@ -46,7 +46,7 @@ public class DownFileInfo  implements Parcelable{
         this.fileFolder=getDataDir(context);
     }
     public String getDataDir(Context context){
-        return  new File(AppUtil.getDataDirectory(context), fileName).getAbsolutePath();
+        return  new File(SystemUtil.getInstance().getDataDirectory(context), fileName).getAbsolutePath();
     }
     @Override
     public int describeContents() {

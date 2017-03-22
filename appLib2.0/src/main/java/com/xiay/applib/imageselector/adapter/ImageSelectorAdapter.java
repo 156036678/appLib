@@ -16,13 +16,13 @@ import com.xiay.applib.imageselector.ImageSelectorConfig;
 import com.xiay.applib.imageselector.model.LocalMedia;
 import com.xiay.applib.imageselector.view.ImagePreviewDeleteActivity;
 import com.xiay.applib.imageselector.view.ImageSelectorActivity;
-import com.xiay.applib.util.AppUtil;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import cn.xiay.bean.HttpConfig;
+import cn.xiay.util.SystemUtil;
 
 /**
  * @author Xiay
@@ -96,7 +96,7 @@ public class ImageSelectorAdapter extends RecyclerView.Adapter<ImageSelectorAdap
                 request.centerCrop().into(holder.imageView);
 
             } else {
-                manager.load(AppUtil.resIdToUri(ctx, addIcon.getAddIconResId())).centerCrop().into(holder.imageView);
+                manager.load(SystemUtil.getInstance().resIdToUri(ctx, addIcon.getAddIconResId())).centerCrop().into(holder.imageView);
             }
             holder.imageView.setOnClickListener(new View.OnClickListener() {
                 @Override

@@ -16,16 +16,18 @@ import java.util.Map;
 import cn.xiay.util.ViewUtil;
 
 public abstract class AppFragment extends Fragment {
-    protected  boolean isScaleView=true;
-    public  boolean isLoadData;
+    protected boolean isScaleView = true;
+    public boolean isLoadData;
     public AppActivity activity;
-    public RxManager rxManager=new RxManager();
+    public RxManager rxManager = new RxManager();
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         this.activity = (AppActivity) context;
     }
-//    @Override
+
+    //    @Override
 //    public void onDetach() {
 //        super.onDetach();
 //        try {
@@ -40,27 +42,32 @@ public abstract class AppFragment extends Fragment {
 //        }
 //    }
     public void setScaleView(boolean scaleView) {
-    isScaleView = scaleView;
+        isScaleView = scaleView;
     }
+
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setPageTitle(setTitle());
         setPageHeadColor(setPageHeadColor());
         if (isScaleView)
-        ViewUtil.scaleContentView((ViewGroup)getView());
+            ViewUtil.scaleContentView((ViewGroup) getView());
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-      //  getData();
+        //  getData();
     }
 
-    protected  abstract String setTitle();
-    protected  abstract int setPageHeadColor();
+    protected abstract String setTitle();
+
+    protected abstract int setPageHeadColor();
     //protected  abstract void   getData();
-    /**获取参数对象*/
+
+    /**
+     * 获取参数对象
+     */
     public Map<String, String> initParams(String method) {
         return activity.initParams(method);
     }
@@ -89,25 +96,25 @@ public abstract class AppFragment extends Fragment {
     }
 
 
-
-
     /**
      * 跳转activity,代工厂参数
      */
     public void openActivity(Class<?> cls) {
         activity.openActivity(cls);
     }
+
     /**
      * 跳转activity,代工厂参数
      */
-    public void openActivityForResult(Class<?> cls,int requestCode) {
-        activity.openActivityForResult(cls,requestCode);
+    public void openActivityForResult(Class<?> cls, int requestCode) {
+        activity.openActivityForResult(cls, requestCode);
     }
+
     /**
      * 跳转activity,代工厂参数
      */
-    public void openActivityForResult(Intent intent,int requestCode) {
-        activity.openActivityForResult(intent,requestCode);
+    public void openActivityForResult(Intent intent, int requestCode) {
+        activity.openActivityForResult(intent, requestCode);
     }
 
     /**
@@ -116,27 +123,36 @@ public abstract class AppFragment extends Fragment {
     public void openActivity(Intent intent) {
         activity.openActivity(intent);
     }
+
     /**
      * 跳转activity
+     *
      * @param clazz
      * @param parmas 传值格式  key,value
      */
-    public void openActivity(Class clazz,Object... parmas) {
-        activity.openActivity(clazz,parmas);
+    public void openActivity(Class clazz, Object... parmas) {
+        activity.openActivity(clazz, parmas);
     }
+
     protected void setPageTitle(String title) {
-        if (title!=null)
-        ((TextView) getView().findViewById(R.id.tv_pageHeadName)).setText(title);
+        if (title != null) {
+            View view = getView().findViewById(R.id.tv_pageHeadName);
+            if (view != null)
+                ((TextView) view).setText(title);
+        }
+
     }
-    protected void setPageHeadColor(int backgroundColorResources ) {
-       View rl_page_head =getView().findViewById(R.id.rl_page_head);
-        if (rl_page_head!=null)
-        rl_page_head.setBackgroundColor(backgroundColorResources);
+
+    protected void setPageHeadColor(int backgroundColorResources) {
+        View rl_page_head = getView().findViewById(R.id.rl_page_head);
+        if (rl_page_head != null)
+            rl_page_head.setBackgroundColor(backgroundColorResources);
     }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (rxManager!=null){
+        if (rxManager != null) {
             rxManager.clear();
         }
     }

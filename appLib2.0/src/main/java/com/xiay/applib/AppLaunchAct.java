@@ -7,11 +7,12 @@ import android.view.View;
 
 import com.nohttp.extra.EncryptUtil;
 import com.xiay.applib.bean.DataGuidePic;
-import com.xiay.applib.db.DBGuide;
-import com.xiay.applib.db.DBGuidePic;
+import com.xiay.applib.db.bean.TBGuide;
+import com.xiay.applib.db.bean.TBGuidePic;
+import com.xiay.applib.db.dao.GuideDao;
+import com.xiay.applib.db.dao.GuidePicDao;
 import com.xiay.applib.listener.HttpCallBack;
 import com.xiay.applib.service.AppDownPicService;
-import com.xiay.applib.util.AppGreenDao;
 import com.xiay.applib.util.rxjava.RxUtil;
 import com.xiay.applib.util.rxjava.bean.RxIOTask;
 import com.xiay.applib.util.rxjava.bean.RxTask;
@@ -26,12 +27,8 @@ import java.util.concurrent.TimeUnit;
 
 import cn.xiay.dialog.ClickListener;
 import cn.xiay.util.NetUtil;
-import gen.greendao.DBGuideDao;
-import gen.greendao.DBGuidePicDao;
 import rx.Observable;
 import rx.functions.Action1;
-
-import static com.xiay.applib.util.AppGreenDao.getDaoSession;
 
 /**
  * 启动页面
@@ -80,12 +77,12 @@ public abstract class AppLaunchAct extends AppActivity {
                             }
                         }));
                     }else {
-                        DBGuideDao dBGuideDao = getDaoSession().getDBGuideDao();
-                        DBGuide dbGuide = dBGuideDao.queryBuilder().unique();
+                        GuideDao guideDao=new GuideDao();
+                        TBGuide dbGuide = guideDao.queryForFirst();
                         if (dbGuide == null) {//如果是第一次启动
-                            dbGuide = new DBGuide();
+                            dbGuide = new TBGuide();
                             dbGuide.isFirstLunch = false;
-                            dBGuideDao.save(dbGuide);//保存最新数据
+                            guideDao.save(dbGuide);//保存最新数据
                             isShowGuideWithApp = true;
                         }
                         isShowGuide(isShowGuideWithApp, isShowGuideWithSDPic);
@@ -108,34 +105,34 @@ public abstract class AppLaunchAct extends AppActivity {
                     @Override
                     public void doInIOThread() {
                         try {
-                            DBGuideDao dBGuideDao = getDaoSession().getDBGuideDao();
-                            DBGuide dbGuide = dBGuideDao.queryBuilder().unique();
+                            GuideDao guideDao=new GuideDao();
+                            TBGuide dbGuide = guideDao.queryForFirst();
                             if (responseData.getInt("status") == 1) {
                                 JSONArray jArr = responseData.getJSONArray("data");
                                 if (dbGuide == null) {//如果是第一次启动
-                                    dbGuide = new DBGuide();
+                                    dbGuide = new TBGuide();
                                     dbGuide.oldData = jArr.toString();
                                     dbGuide.isFirstLunch = false;
-                                    dBGuideDao.save(dbGuide);//保存最新数据
+                                    guideDao.save(dbGuide);//保存最新数据
                                     isShowGuideWithApp = true;
                                     startDownPic(jArr, null);
                                 } else if (!jArr.toString().equals(dbGuide.oldData)) {//如果服务器数据和本地数据不同相同下载图片，等图片全部下载成功后oldData改成newData,避免下载失败后无法重新下载问题
                                     dbGuide.newData = jArr.toString();
-                                    dBGuideDao.save(dbGuide);
-                                    DBGuidePicDao dbGuidePicDao = AppGreenDao.getDaoSession().getDBGuidePicDao();
-                                    List<DBGuidePic> dbGuidePics = dbGuidePicDao.queryBuilder().list();
+                                    guideDao.save(dbGuide);
+                                    GuidePicDao guidePicDao=new GuidePicDao();
+                                    List<TBGuidePic> dbGuidePics =new GuidePicDao().queryAllData();
                                     if (dbGuidePics.size() > 0) {//表示服务器修改了引导图，需重新下载
-                                        startDownPic(jArr, dbGuidePicDao);
+                                        startDownPic(jArr, guidePicDao);
                                     }
                                 }else if (dbGuide.isShowNewGuide){
                                     isShowGuideWithSDPic=true;
                                     dbGuide.isShowNewGuide=false;
-                                    dBGuideDao.save(dbGuide);
+                                    guideDao.save(dbGuide);
                                 }
                             }else {//请求接口返回失败
                                 if (dbGuide == null) {//如果是第一次启动
                                     isShowGuideWithApp = true;
-                                    dBGuideDao.save(new DBGuide());//保存最新数据
+                                    guideDao.save(new TBGuide());//保存最新数据
                                 }
                             }
                             isShowGuide(isShowGuideWithApp, isShowGuideWithSDPic);
@@ -156,19 +153,18 @@ public abstract class AppLaunchAct extends AppActivity {
     /**
      * 下载图片
      */
-    private void startDownPic(JSONArray jArr, DBGuidePicDao dbGuidePicDao) throws JSONException {
+    private void startDownPic(JSONArray jArr, GuidePicDao guidePicDao) throws JSONException {
         if (jArr.length() > 0) {
             DataGuidePic guidePic = new DataGuidePic();
-            ArrayList<DBGuidePic> guidePics = new ArrayList<>();
+            ArrayList<TBGuidePic> guidePics = new ArrayList<>();
             for (int i = 0; i < jArr.length(); i++) {
-                DBGuidePic dbGuidePic = new DBGuidePic();
-                dbGuidePic.setPics(jArr.getJSONObject(i).getString("url"));
+                TBGuidePic dbGuidePic = new TBGuidePic(jArr.getJSONObject(i).getString("url"));
                 guidePics.add(dbGuidePic);
                 guidePic.pics.add(jArr.getJSONObject(i).getString("url"));
             }
-            if (dbGuidePicDao != null) {
-                dbGuidePicDao.deleteAll();
-                dbGuidePicDao.insertInTx(guidePics);
+            if (guidePicDao != null) {
+                guidePicDao.deleteAll();
+                guidePicDao.insert(guidePics);
             }
             Intent i = new Intent(getApplicationContext(), AppDownPicService.class);
             i.putExtra(AppDownPicService.GUIDE_PICS, guidePic);

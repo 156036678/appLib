@@ -11,8 +11,8 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
-import com.xiay.applib.db.DBGuidePic;
-import com.xiay.applib.util.AppGreenDao;
+import com.xiay.applib.db.bean.TBGuidePic;
+import com.xiay.applib.db.dao.GuidePicDao;
 import com.xiay.applib.view.guide.ADPagerAdapter;
 import com.xiay.applib.view.guide.CirclePageIndicator;
 
@@ -32,23 +32,21 @@ public abstract class AppGuideAct extends AppActivity implements View.OnTouchLis
     private int currentIndex = 0;
     private CirclePageIndicator indicator;
     private boolean locker = true;
-    public List<DBGuidePic> guidePics;
+    public List<TBGuidePic> guidePics;
     @SuppressWarnings("unchecked")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
-        guidePics=getGuidePics();
+        //获取引导页图片/
+        guidePics=new GuidePicDao().queryAllData();
     }
     /**SD上是否有图片*/
     public boolean hasSDPic(){
         return guidePics.size()>0;
     }
-    /**获取引导页图片*/
-   public List<DBGuidePic> getGuidePics(){
-      return AppGreenDao.getDaoSession().getDBGuidePicDao().queryBuilder().list();
-   }
+
     /**设置引导页view*/
     public void setGuideView(ViewPager viewPager, List<View> views) {
         if (hasSDPic()){
@@ -61,7 +59,7 @@ public abstract class AppGuideAct extends AppActivity implements View.OnTouchLis
                     for (int j = 0; j <viewGroup.getChildCount() ; j++) {
                         view=viewGroup.getChildAt(j);
                         if (view instanceof ImageView){
-                            Glide.with(AppGuideAct.this).load( guidePics.get(i).getPics()).centerCrop().into((ImageView) view);
+                            Glide.with(AppGuideAct.this).load( guidePics.get(i).pics).centerCrop().into((ImageView) view);
                             break;
                         }
                     }

@@ -31,7 +31,6 @@ import com.nohttp.rest.StringRequest;
 import com.xiay.applib.config.ConfigUrl;
 import com.xiay.applib.request.BeanReqeust;
 import com.xiay.applib.ui.dialog.MyDialog;
-import com.xiay.applib.util.AppUtil;
 import com.xiay.applib.util.StatusBarUtil;
 import com.xiay.applib.util.rxjava.RxManager;
 
@@ -343,7 +342,7 @@ public abstract class AppActivity extends AbHttpActivity {
         ArrayMap fixedParams = new ArrayMap<>();
         fixedParams.put("time", time + "");
         fixedParams.put("plat", "2");
-        fixedParams.put("version", AppUtil.getVersionCode(this) + "");
+        fixedParams.put("version", SystemUtil.getInstance().getVersionCode(this) + "");
         if (MyDevice.IMEI == null) {
             MyDevice.IMEI = SPUtil.getString("imei");
         }
@@ -565,7 +564,7 @@ public abstract class AppActivity extends AbHttpActivity {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (null != this.getCurrentFocus()) {
-            SystemUtil.hideSoftInput(this);
+            SystemUtil.getInstance().hideSoftInput(this);
         }
         return super.onTouchEvent(event);
     }
