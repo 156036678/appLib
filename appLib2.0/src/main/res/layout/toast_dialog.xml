@@ -12,14 +12,14 @@
  <ImageView
      android:id="@+id/iv_toastImage"
      android:layout_width="140px" android:layout_height="140px"
-            android:layout_marginTop="55px"
+            android:layout_marginTop="35px"
      android:scaleType="fitXY"
  />
     <TextView
         android:id="@+id/toastText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="35px"
+        android:layout_marginTop="15px"
         android:textSize="39px"
         android:layout_marginLeft="30px"
         android:layout_marginRight="30px"

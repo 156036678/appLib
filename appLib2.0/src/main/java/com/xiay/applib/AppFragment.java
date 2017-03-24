@@ -50,8 +50,13 @@ public abstract class AppFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         setPageTitle(setTitle());
         setPageHeadColor(setPageHeadColor());
-        if (isScaleView)
-            ViewUtil.scaleContentView((ViewGroup) getView());
+        if (isScaleView){
+           if(view instanceof ViewGroup)
+               ViewUtil.scaleContentView((ViewGroup) getView());
+            else
+               ViewUtil.scaleView(view);
+        }
+
     }
 
     @Override

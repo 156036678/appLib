@@ -51,6 +51,7 @@ import cn.xiay.util.ViewUtil;
 
 import static com.xiay.applib.R.id.rl_page_head;
 
+
 /**
  * 描述：继承BaseHttpActivity 可实现网络请求和加载网络图片
  *
@@ -94,7 +95,7 @@ public abstract class AppActivity extends AbHttpActivity {
                 if (isScaleView) {
                     ViewUtil.scaleContentView(content);
                 }
-                pageHead = (RelativeLayout) content.findViewById(R.id.rl_page_head);
+                pageHead = (RelativeLayout) content.findViewById(rl_page_head);
                 if (pageHead != null && getPageHeaderColorResources() != 0) {
                     pageHead.setBackgroundColor(getPageHeaderColorResources());
                 }
@@ -520,7 +521,7 @@ public abstract class AppActivity extends AbHttpActivity {
      */
     public ImageButton addBackBtn(int imageResource) {
         if (pageHead == null)
-            pageHead = findView(rl_page_head);
+            pageHead = findView(R.id.rl_page_head);
         if (pageHead == null)
             return null;
         btn_back = new ImageButton(this);
@@ -547,7 +548,7 @@ public abstract class AppActivity extends AbHttpActivity {
      * 添加右边按钮
      */
     public View addRightView(View view) {
-        pageHead = findView(rl_page_head);
+        pageHead = findView(R.id.rl_page_head);
         if (pageHead != null) {
             hasRightBtn = true;
             //btn_back.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.MATCH_PARENT));
