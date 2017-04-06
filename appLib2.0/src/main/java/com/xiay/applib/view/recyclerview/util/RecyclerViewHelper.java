@@ -1,16 +1,11 @@
 package com.xiay.applib.view.recyclerview.util;
 
-import android.app.Activity;
-import android.os.Build;
-import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.GestureDetector;
-import android.view.HapticFeedbackConstants;
-import android.view.MotionEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -18,110 +13,118 @@ import android.widget.TextView;
 import com.xiay.applib.R;
 import com.xiay.applib.view.VerticalSwipeRefreshLayout;
 import com.xiay.applib.view.recyclerview.RecyclerBaseAdapter;
-import com.xiay.applib.view.recyclerview.RecyclerViewHolder;
 import com.xiay.applib.view.recyclerview.WrapContentLinearLayoutManager;
-import com.xiay.applib.view.recyclerview.listener.OnListItemClickListener;
+import com.xiay.applib.view.recyclerview.listener.OnItemChildClickListener;
+import com.xiay.applib.view.recyclerview.listener.OnItemChildLongClickListener;
+import com.xiay.applib.view.recyclerview.listener.OnItemClickListener;
+import com.xiay.applib.view.recyclerview.listener.OnItemLongClickListener;
 import com.xiay.applib.view.recyclerview.recyclerviewflexibledivider.GridSpacingItemDecoration;
 import com.xiay.applib.view.recyclerview.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
-import cn.xiay.util.ViewUtil;
+import cn.xiay.util.autolayout.utils.AutoUtils;
 
 import static com.nohttp.NoHttp.getContext;
-import static com.xiay.applib.view.recyclerview.RecyclerBaseAdapter.EMPTY_VIEW;
-import static com.xiay.applib.view.recyclerview.RecyclerBaseAdapter.FOOTER_VIEW;
-import static com.xiay.applib.view.recyclerview.RecyclerBaseAdapter.HEADER_VIEW;
-import static com.xiay.applib.view.recyclerview.RecyclerBaseAdapter.LOADING_VIEW;
 
 /**
  * Created by Xiay on 2017/2/14.
  */
 
-public  class RecyclerViewHelper<ADT> implements RecyclerView.OnItemTouchListener {
-    int currentPage=1;
-    protected int perPageSize;
-    public RecyclerBaseAdapter adapter;
-    /**是否显示没有更多数据View*/
-    public boolean isShowEnd = true;
-    private String emptyMessage;
-    private ViewGroup emptyView;
-    Activity activity;
-    public RecyclerView rv_list;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
-    private GestureDetectorCompat mGestureDetector;
-    private View mPressedView = null;
-    private boolean mIsPrepressed = false;
-    private boolean mIsShowPress = false;
-    private Set<Integer> childClickViewIds;
-    private Set<Integer> longClickViewIds;
-    OnListItemClickListener onListItemClickListener;
-    ;
+public class RecyclerViewHelper< ADT, AD extends RecyclerBaseAdapter<ADT>>  {
+    int currentPage = 1;
+    protected int perPageSize = 10;
+    private RecyclerBaseAdapter adapter;
     /**
-     *
-     * @param activity Activity
-     * @param rv_list RecyclerView
-     * @param adapter  RecyclerBaseAdapter
-     * @param onListItemClickListener  list 点击事件监听类
-     * @param perPageSize 每页显示多少条数据
-     * @param emptyMessage 没有数据的时候显示的文字消息
+     * 是否显示没有更多数据View
      */
-    public RecyclerViewHelper(Activity activity, RecyclerView rv_list, RecyclerBaseAdapter adapter, OnListItemClickListener onListItemClickListener, int perPageSize, String emptyMessage) {
+    private boolean isShowEnd = true;
+    private ViewGroup emptyView;
+    private RecyclerView rv_list;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    int customEmptyViewLayout = R.layout.app_empty_view;
+
+    /**
+     * 设置自定义EmptyView
+     *
+     * @param customEmptyViewProvider
+     */
+    public void setCustomEmptyViewProvider(CustomEmptyViewProvider customEmptyViewProvider) {
+        this.customEmptyViewLayout = customEmptyViewProvider.getCustomEmptyViewLayout();
+    }
+
+    public interface CustomEmptyViewProvider {
+        int getCustomEmptyViewLayout();
+    }
+
+    public RecyclerViewHelper() {
+    }
+
+    /**
+     * @param rv_list                 RecyclerView
+     * @param adapter                 RecyclerBaseAdapter
+     * @param perPageSize             每页显示多少条数据
+     * @param emptyMessage            没有数据的时候显示的文字消息
+     */
+    public RecyclerViewHelper(RecyclerView rv_list, RecyclerBaseAdapter<ADT> adapter, int perPageSize, String emptyMessage) {
         this.perPageSize = perPageSize;
         this.adapter = adapter;
         this.rv_list = rv_list;
-        this.activity = activity;
-        this.onListItemClickListener = onListItemClickListener;
-        this.emptyMessage = emptyMessage;
-        rv_list.setLayoutManager(new WrapContentLinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false));
+        rv_list.setLayoutManager(new WrapContentLinearLayoutManager(rv_list.getContext(), LinearLayoutManager.VERTICAL, false));
         //      添加动画
         rv_list.setItemAnimator(new DefaultItemAnimator());
         this.adapter = adapter;
         rv_list.setAdapter(adapter);
-        if (emptyMessage!=null) {
-            emptyView=getEmptyView(emptyMessage);
-        }
-        if (onListItemClickListener!=null){
-            rv_list.addOnItemTouchListener(this);
-            mGestureDetector = new GestureDetectorCompat(rv_list.getContext(), new ItemTouchHelperGestureListener(rv_list));
-        }
+        emptyView = getEmptyView(emptyMessage);
     }
-    public RecyclerViewHelper(Activity activity, RecyclerView rv_list, RecyclerBaseAdapter adapter, OnListItemClickListener onListItemClickListener,String emptyMessage) {
-        this(activity,rv_list,adapter,onListItemClickListener,10,emptyMessage);
+
+
+    public RecyclerViewHelper(RecyclerView rv_list, RecyclerBaseAdapter<ADT> adapter) {
+        this(rv_list, adapter, 10, null);
     }
-    public RecyclerViewHelper(Activity activity, RecyclerView rv_list, RecyclerBaseAdapter adapter, OnListItemClickListener onListItemClickListener, int perPageSize) {
-        this(activity,rv_list,adapter,onListItemClickListener,perPageSize,null);
+
+    public void setItemDecoration(RecyclerView.ItemDecoration itemDecoration) {
+        rv_list.addItemDecoration(itemDecoration);
     }
-    public RecyclerViewHelper(Activity activity, RecyclerView rv_list, RecyclerBaseAdapter adapter, OnListItemClickListener onListItemClickListener) {
-        this(activity,rv_list,adapter,onListItemClickListener,10,null);
+
+    /**
+     * @param recyclerView            RecyclerView
+     * @param adapter                 RecyclerBaseAdapter
+     * @param emptyMessage            没有数据的时候显示的文字消息
+     */
+    public void setRecyclerView(RecyclerView recyclerView,AD adapter, String emptyMessage) {
+        this.rv_list = recyclerView;
+        rv_list.setLayoutManager(new WrapContentLinearLayoutManager(rv_list.getContext(), LinearLayoutManager.VERTICAL, false));
+        //      添加动画
+        rv_list.setItemAnimator(new DefaultItemAnimator());
+        emptyView = getEmptyView(emptyMessage);
+        this.adapter = adapter;
+        rv_list.setAdapter(adapter);
     }
-    public RecyclerViewHelper(Activity activity, RecyclerView rv_list, RecyclerBaseAdapter adapter) {
-        this(activity,rv_list,adapter,null,10,null);
+
+    public void setShowEnd(boolean showEnd) {
+        isShowEnd = showEnd;
     }
-    public  void setItemDecoration(RecyclerView.ItemDecoration itemDecoration){
-            rv_list.addItemDecoration(itemDecoration);
-    }
+
 
     /**
      * 设置下拉刷新监听
+     *
      * @param swipeRefreshLayout
      * @param onRefreshListener
      */
-    public void setOnRefreshListener(View swipeRefreshLayout, SwipeRefreshLayout.OnRefreshListener onRefreshListener){
-            if (swipeRefreshLayout instanceof VerticalSwipeRefreshLayout)
-                mSwipeRefreshLayout = (VerticalSwipeRefreshLayout) swipeRefreshLayout;
-            else  if (swipeRefreshLayout instanceof SwipeRefreshLayout)
-                mSwipeRefreshLayout = (SwipeRefreshLayout) swipeRefreshLayout;
-            mSwipeRefreshLayout.setColorSchemeResources(R.color.red, R.color.green, R.color.yellow);
-            mSwipeRefreshLayout.setOnRefreshListener(onRefreshListener);
+    public void setOnRefreshListener(View swipeRefreshLayout, SwipeRefreshLayout.OnRefreshListener onRefreshListener) {
+        if (swipeRefreshLayout instanceof VerticalSwipeRefreshLayout)
+            mSwipeRefreshLayout = (VerticalSwipeRefreshLayout) swipeRefreshLayout;
+        else if (swipeRefreshLayout instanceof SwipeRefreshLayout)
+            mSwipeRefreshLayout = (SwipeRefreshLayout) swipeRefreshLayout;
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.red, R.color.green, R.color.yellow);
+        mSwipeRefreshLayout.setOnRefreshListener(onRefreshListener);
     }
 
     /**
-     *
      * @param dividerHeight -2 使用默认高度和颜色
-     * @param dividerColor -1 使用透明颜色
+     * @param dividerColor  -1 使用透明颜色
      * @return
      */
     public RecyclerView.ItemDecoration getItemDecoration(int dividerHeight, int dividerColor) {
@@ -130,41 +133,52 @@ public  class RecyclerViewHelper<ADT> implements RecyclerView.OnItemTouchListene
             if (dividerColor == -1)
                 dividerColor = R.color.transparent;
             if (dividerHeight != -1)
-                itemDecoration = new HorizontalDividerItemDecoration.Builder(activity).size(ViewUtil.scaleValue(dividerHeight)).color(activity.getResources().getColor(dividerColor)).build();
+                itemDecoration = new HorizontalDividerItemDecoration.Builder(rv_list.getContext()).size(AutoUtils.getPercentHeightSize(dividerHeight)).color(rv_list.getContext().getResources().getColor(dividerColor)).build();
         } else {
-            itemDecoration = new HorizontalDividerItemDecoration.Builder(getContext()).size(ViewUtil.scaleValue(1)).color(activity.getResources().getColor(R.color.gray_listLine)).build();
+            itemDecoration = new HorizontalDividerItemDecoration.Builder(getContext()).size(AutoUtils.getPercentHeightSize(1)).color(rv_list.getContext().getResources().getColor(R.color.gray_listLine)).build();
         }
         return itemDecoration;
     }
+
     public RecyclerView.ItemDecoration getItemDecoration() {
-        return getItemDecoration(-2,-1);
+        return getItemDecoration(-2, -1);
     }
+
     /**
      * 设置表格布局横向item个数
      *
      * @param count
      */
     public void setGridLayoutCount(int count) {
-        rv_list.setLayoutManager(new GridLayoutManager(activity, count));
+        rv_list.setLayoutManager(new GridLayoutManager(rv_list.getContext(), count));
         rv_list.addItemDecoration(new GridSpacingItemDecoration(count, 10, false));
-        //	rv_list.addItemDecoration(new GridSpacingItemDecoration(3, ViewUtil.scaleValue(6), false));
     }
 
     /***
      * 设置当前页数
+     *
      * @param currentPage
      */
     public void setCurrentPage(int currentPage) {
         this.currentPage = currentPage;
     }
+
     public void setListData(List<ADT> newData) {
-        setListData(newData,null);
+        setListData(newData, null,true);
     }
-    public void setListData(List<ADT> newData, String noDataText) {
+    public void setListData(List<ADT> newData, boolean isShowEmptyView) {
+        setListData(newData, null, isShowEmptyView);
+    }
+    public void setListData(List<ADT> newData,  String noDataText) {
+        setListData(newData, noDataText, true);
+    }
+
+    public void setListData(List<ADT> newData, String noDataText, boolean isShowEmptyView) {
         if (newData == null) {
-            if (mSwipeRefreshLayout!=null)
+            if (mSwipeRefreshLayout != null)
                 mSwipeRefreshLayout.setRefreshing(false);
-            addEmptyView(noDataText);
+            if (isShowEmptyView)
+                addEmptyView(noDataText);
             adapter.getData().clear();
             adapter.notifyDataSetChanged();
             adapter.removeAllFooterView();
@@ -172,7 +186,8 @@ public  class RecyclerViewHelper<ADT> implements RecyclerView.OnItemTouchListene
         }
         if (currentPage == 1) {
             if (newData.size() == 0) {
-                addEmptyView(noDataText);
+                if (isShowEmptyView)
+                    addEmptyView(noDataText);
                 adapter.getData().clear();
                 adapter.notifyDataSetChanged();
                 adapter.removeAllFooterView();
@@ -192,254 +207,110 @@ public  class RecyclerViewHelper<ADT> implements RecyclerView.OnItemTouchListene
                 adapter.loadMoreComplete();
             }
         }
-        if (mSwipeRefreshLayout!=null)
+        if (mSwipeRefreshLayout != null)
             mSwipeRefreshLayout.setRefreshing(false);
     }
+
     public void addEmptyView(String emptyText) {
         if (emptyText != null)
             adapter.setEmptyView(emptyView);
+
+        else {
+            addEmptyView();
+        }
     }
+
+    public void addEmptyView() {
+        adapter.setEmptyView(emptyView);
+    }
+    public RecyclerBaseAdapter<ADT> getAdapter() {
+       return adapter;
+    }
+    public void setAdapter(RecyclerBaseAdapter adapter) {
+      this.adapter=adapter;
+    }
+
     public void toEnd() {
         if (adapter != null) {
             adapter.loadMoreEnd(isShowEnd);
         }
     }
+
     protected ViewGroup getEmptyView(String text) {
         if (emptyView == null) {
-            emptyView = (ViewGroup)activity.getLayoutInflater().inflate(R.layout.app_empty_view, (ViewGroup) rv_list.getParent(), false);
-            ((TextView) emptyView.findViewById(R.id.tv_empty)).setText(text);
-            ViewUtil.scaleContentView(emptyView);
+            emptyView = (ViewGroup) LayoutInflater.from(rv_list.getContext()).inflate(customEmptyViewLayout, (ViewGroup) rv_list.getParent(), false);
+            if (text != null) {
+                View v_emptyText = emptyView.findViewById(R.id.tv_empty);
+                if (v_emptyText != null && v_emptyText instanceof TextView)
+                    ((TextView) v_emptyText).setText(text);
+            }
+            AutoUtils.auto(emptyView);
         }
         return emptyView;
     }
+
     public void onFailed() {
-        if (mSwipeRefreshLayout!=null)
+        if (mSwipeRefreshLayout != null)
             mSwipeRefreshLayout.setRefreshing(false);
-        if (adapter!=null)
+        if (adapter != null)
             adapter.loadMoreFail();
     }
-    public  void setLoadMoreEnable(boolean isShowEnd,RecyclerBaseAdapter.RequestLoadMoreListener requestLoadMoreListener){
-        this.isShowEnd=isShowEnd;
+
+    public void setLoadMoreEnable(boolean isShowEnd, RecyclerBaseAdapter.RequestLoadMoreListener requestLoadMoreListener) {
+        this.isShowEnd = isShowEnd;
         adapter.setOnLoadMoreListener(requestLoadMoreListener);
     }
+
     public void addHeaderAndEmptyView(View header, String emptyText) {
         adapter.removeAllHeaderView();
         adapter.addHeaderView(header);
         adapter.setHeaderAndEmpty(true);
-        if (emptyText!=null)
+        if (emptyText != null)
             adapter.setEmptyView(getEmptyView(emptyText));
 
     }
+
     public void addHeaderView(View header) {
         adapter.removeAllHeaderView();
         adapter.addHeaderView(header);
         adapter.setHeaderAndEmpty(true);
     }
-    public  void  setPerPageSize(int perPageSize){
-     this.perPageSize=perPageSize;
+
+    public void setPerPageSize(int perPageSize) {
+        this.perPageSize = perPageSize;
     }
+   public void setOnItemClickListener(final OnItemClickListener<ADT,AD> listener){
+       adapter.setOnItemClickListener(new RecyclerBaseAdapter.OnItemClickListener() {
+           @Override
+           public void onItemClick(RecyclerBaseAdapter adapter, View view, int position) {
+               listener.onItemClick((AD) adapter,view,(ADT) adapter.getItem(position),position);
+           }
+       });
+   }
+   public void setOnItemLongClickListener(final OnItemLongClickListener<ADT,AD> listener){
+       adapter.setOnItemLongClickListener(new RecyclerBaseAdapter.OnItemLongClickListener() {
+           @Override
+           public boolean onItemLongClick(RecyclerBaseAdapter adapter, View view, int position) {
+               return  listener.onItemLongClick((AD) adapter,view,(ADT) adapter.getItem(position),position);
+           }
+       });
+   }
+   public void setOnItemChildClickListener(final OnItemChildClickListener<ADT,AD> listener){
+       adapter.setOnItemChildClickListener(new RecyclerBaseAdapter.OnItemChildClickListener() {
+           @Override
+           public boolean onItemChildClick(RecyclerBaseAdapter adapter, View view, int position) {
+               return  listener.onItemChildClick((AD) adapter,view,(ADT) adapter.getItem(position),position);
+           }
+       });
+   }
+   public void setOnItemChildLongClickListener(final OnItemChildLongClickListener<ADT,AD> listener){
+       adapter.setOnItemChildLongClickListener(new RecyclerBaseAdapter.OnItemChildLongClickListener() {
+           @Override
+           public void onItemChildLongClick(RecyclerBaseAdapter adapter, View view, int position) {
+               listener.onItemChildLongClick((AD) adapter,view,(ADT) adapter.getItem(position),position);
+           }
 
+       });
+   }
 
-    private class ItemTouchHelperGestureListener extends GestureDetector.SimpleOnGestureListener {
-
-        private RecyclerView rv_list;
-
-        @Override
-        public boolean onDown(MotionEvent e) {
-            mIsPrepressed = true;
-            mPressedView = rv_list.findChildViewUnder(e.getX(), e.getY());
-            super.onDown(e);
-            return false;
-        }
-
-        @Override
-        public void onShowPress(MotionEvent e) {
-            if (mIsPrepressed && mPressedView != null) {
-//                mPressedView.setPressed(true);
-                mIsShowPress = true;
-            }
-            super.onShowPress(e);
-        }
-
-        public ItemTouchHelperGestureListener(RecyclerView rv_list) {
-            this.rv_list = rv_list;
-        }
-
-        @Override
-        public boolean onSingleTapUp(MotionEvent e) {
-            if (mIsPrepressed && mPressedView != null) {
-
-                final View pressedView = mPressedView;
-                RecyclerViewHolder vh = (RecyclerViewHolder) rv_list.getChildViewHolder(pressedView);
-
-                if (isHeaderOrFooterPosition(vh.getLayoutPosition())) {
-                    return false;
-                }
-                childClickViewIds = vh.getChildClickViewIds();
-
-                if (childClickViewIds != null && childClickViewIds.size() > 0) {
-                    for (Iterator it = childClickViewIds.iterator(); it.hasNext(); ) {
-                        View childView = pressedView.findViewById((Integer) it.next());
-                        if (inRangeOfView(childView, e) && childView.isEnabled()) {
-                            setPressViewHotSpot(e, childView);
-                            childView.setPressed(true);
-                            int pos = vh.getLayoutPosition() - adapter.getHeaderLayoutCount();
-                            onListItemClickListener.onItemChildClick(adapter, childView, adapter.getItem(pos), pos);
-                            resetPressedView(childView);
-                            return true;
-                        } else {
-                            childView.setPressed(false);
-                        }
-                    }
-                    setPressViewHotSpot(e, pressedView);
-                    mPressedView.setPressed(true);
-                    for (Iterator it = childClickViewIds.iterator(); it.hasNext(); ) {
-                        View childView = pressedView.findViewById((Integer) it.next());
-                        childView.setPressed(false);
-                    }
-                    int pos = vh.getLayoutPosition() - adapter.getHeaderLayoutCount();
-                    onListItemClickListener.onItemClick(adapter, pressedView, adapter.getItem(pos), pos);
-                } else {
-                    setPressViewHotSpot(e, pressedView);
-                    mPressedView.setPressed(true);
-                    for (Iterator it = childClickViewIds.iterator(); it.hasNext(); ) {
-                        View childView = pressedView.findViewById((Integer) it.next());
-                        childView.setPressed(false);
-                    }
-                    int pos = vh.getLayoutPosition() - adapter.getHeaderLayoutCount();
-                    onListItemClickListener.onItemClick(adapter, pressedView, adapter.getItem(pos), pos);
-                }
-                resetPressedView(pressedView);
-
-            }
-            return true;
-        }
-
-        private void resetPressedView(final View pressedView) {
-            if (pressedView != null) {
-                pressedView.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (pressedView != null) {
-                            pressedView.setPressed(false);
-                        }
-
-                    }
-                }, 100);
-            }
-
-            mIsPrepressed = false;
-            mPressedView = null;
-        }
-
-        @Override
-        public void onLongPress(MotionEvent e) {
-            boolean isChildLongClick = false;
-            if (mIsPrepressed && mPressedView != null) {
-                mPressedView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-                RecyclerViewHolder vh = (RecyclerViewHolder) rv_list.getChildViewHolder(mPressedView);
-                if (!isHeaderOrFooterPosition(vh.getLayoutPosition())) {
-                    longClickViewIds = vh.getItemChildLongClickViewIds();
-                    if (longClickViewIds != null && longClickViewIds.size() > 0) {
-                        for (Iterator it = longClickViewIds.iterator(); it.hasNext(); ) {
-                            View childView = mPressedView.findViewById((Integer) it.next());
-                            if (inRangeOfView(childView, e) && childView.isEnabled()) {
-                                setPressViewHotSpot(e, childView);
-                                int pos = vh.getLayoutPosition() - adapter.getHeaderLayoutCount();
-                                onListItemClickListener.onItemChildLongClick(adapter, childView, adapter.getItem(pos), pos);
-                                childView.setPressed(true);
-                                mIsShowPress = true;
-                                isChildLongClick = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!isChildLongClick) {
-                        int pos = vh.getLayoutPosition() - adapter.getHeaderLayoutCount();
-                        onListItemClickListener.onItemLongClick(adapter, mPressedView, adapter.getItem(pos), pos);
-                        setPressViewHotSpot(e, mPressedView);
-                        mPressedView.setPressed(true);
-                        for (Iterator it = longClickViewIds.iterator(); it.hasNext(); ) {
-                            View childView = mPressedView.findViewById((Integer) it.next());
-                            childView.setPressed(false);
-                        }
-                        mIsShowPress = true;
-                    }
-
-                }
-
-            }
-        }
-    }
-    private void setPressViewHotSpot(final MotionEvent e, final View mPressedView) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            /**
-             * when   click   Outside the region  ,mPressedView is null
-             */
-            if (mPressedView != null && mPressedView.getBackground() != null) {
-                mPressedView.getBackground().setHotspot(e.getRawX(), e.getY() - mPressedView.getY());
-            }
-        }
-    }
-
-    public boolean inRangeOfView(View view, MotionEvent ev) {
-        int[] location = new int[2];
-        if (view.getVisibility() != View.VISIBLE) {
-            return false;
-        }
-        view.getLocationOnScreen(location);
-        int x = location[0];
-        int y = location[1];
-        if (ev.getRawX() < x
-                || ev.getRawX() > (x + view.getWidth())
-                || ev.getRawY() < y
-                || ev.getRawY() > (y + view.getHeight())) {
-            return false;
-        }
-        return true;
-    }
-
-    private boolean isHeaderOrFooterPosition(int position) {
-        /**
-         *  have a headview and EMPTY_VIEW FOOTER_VIEW LOADING_VIEW
-         */
-        if (adapter == null) {
-            if (rv_list != null) {
-                adapter = (RecyclerBaseAdapter) rv_list.getAdapter();
-            } else {
-                return false;
-            }
-        }
-        int type = adapter.getItemViewType(position);
-        return (type == EMPTY_VIEW || type == HEADER_VIEW || type == FOOTER_VIEW || type == LOADING_VIEW);
-    }
-
-    @Override
-    public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-        if (rv_list == null) {
-            this.rv_list = rv;
-        }
-        if (!mGestureDetector.onTouchEvent(e) && e.getActionMasked() == MotionEvent.ACTION_UP && mIsShowPress) {
-            if (mPressedView != null) {
-                RecyclerViewHolder vh = (RecyclerViewHolder) rv_list.getChildViewHolder(mPressedView);
-                if (vh == null || vh.getItemViewType() != LOADING_VIEW) {
-                    mPressedView.setPressed(false);
-                }
-                mPressedView = null;
-            }
-            mIsShowPress = false;
-            mIsPrepressed = false;
-        }
-        return false;
-    }
-
-    @Override
-    public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-        mGestureDetector.onTouchEvent(e);
-    }
-
-    @Override
-    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
-    }
 }

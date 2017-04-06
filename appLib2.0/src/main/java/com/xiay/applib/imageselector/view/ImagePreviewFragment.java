@@ -15,12 +15,12 @@ import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.xiay.applib.R;
+import com.xiay.applib.config.ConfigUrl;
 import com.xiay.applib.imageselector.ImageSelectorConfig;
 import com.xiay.applib.imageselector.uk.co.senab.photoview.PhotoViewAttacher;
 
 import java.io.File;
 
-import cn.xiay.bean.HttpConfig;
 
 /**
  * Created by dee on 15/11/25.
@@ -46,7 +46,7 @@ public class ImagePreviewFragment extends Fragment {
         RequestManager manager= Glide.with(container.getContext());
         DrawableTypeRequest request;
         if (path.startsWith(ImageSelectorConfig.serverPathStartWith)){
-            request= manager.load(HttpConfig.UrlHead+path);
+            request= manager.load(ConfigUrl.getDomain()+path);
 
         }else {
             request= manager.load(new File(path));

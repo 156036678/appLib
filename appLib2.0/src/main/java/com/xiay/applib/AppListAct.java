@@ -8,7 +8,10 @@ import android.view.View;
 import com.nohttp.extra.HttpListener;
 import com.nohttp.rest.Response;
 import com.xiay.applib.view.recyclerview.RecyclerBaseAdapter;
-import com.xiay.applib.view.recyclerview.listener.OnListItemClickListener;
+import com.xiay.applib.view.recyclerview.listener.OnItemChildClickListener;
+import com.xiay.applib.view.recyclerview.listener.OnItemChildLongClickListener;
+import com.xiay.applib.view.recyclerview.listener.OnItemClickListener;
+import com.xiay.applib.view.recyclerview.listener.OnItemLongClickListener;
 import com.xiay.applib.view.recyclerview.util.RecyclerViewHelper;
 
 import java.util.List;
@@ -21,15 +24,21 @@ import cn.xiay.ui.Toast;
  * @param <AD>Adapter 类型
  * @author Xiay
  */
-public abstract class AppListAct<RQ, ADT, AD extends RecyclerBaseAdapter<ADT>> extends AppActivity implements  OnListItemClickListener<ADT, AD>, SwipeRefreshLayout.OnRefreshListener, RecyclerBaseAdapter.RequestLoadMoreListener, HttpListener<RQ> {
+public abstract class AppListAct<RQ, ADT, AD extends RecyclerBaseAdapter<ADT>> extends AppActivity implements SwipeRefreshLayout.OnRefreshListener, RecyclerBaseAdapter.RequestLoadMoreListener, HttpListener<RQ> {
     public RecyclerView rv_list;
     public AD adapter;
     protected int currentPage = 1;
-    private RecyclerViewHelper recyclerViewHelper;
+    private RecyclerViewHelper<ADT,AD> recyclerViewHelper;
+
+    public RecyclerViewHelper getRecyclerViewHelper() {
+        return recyclerViewHelper;
+    }
+
     @Override
     protected void onCreate(Bundle paramBundle) {
         super.onCreate(paramBundle);
         isAutoShowNoNetwork = false;
+        recyclerViewHelper = new RecyclerViewHelper<>();
     }
 
     public void initListViewWithLine(AD adapter, String emptyMessage) {
@@ -67,9 +76,21 @@ public abstract class AppListAct<RQ, ADT, AD extends RecyclerBaseAdapter<ADT>> e
         rv_list = (RecyclerView) findViewById(R.id.rv_list);
         this.adapter=adapter;
         View swipeLayout=findViewById(R.id.swipeLayout);
-        recyclerViewHelper = new RecyclerViewHelper(this, rv_list, adapter,this, emptyMessage);
+        recyclerViewHelper.setRecyclerView(rv_list,adapter,emptyMessage);
         if (swipeLayout!=null)
             recyclerViewHelper.setOnRefreshListener(swipeLayout,this);
+    }
+    public void setOnItemClickListener(final OnItemClickListener<ADT,AD> listener){
+        recyclerViewHelper.setOnItemClickListener(listener);
+    }
+    public void setOnItemLongClickListener(final OnItemLongClickListener<ADT,AD> listener){
+        recyclerViewHelper.setOnItemLongClickListener(listener);
+    }
+    public void setOnItemChildClickListener(final OnItemChildClickListener<ADT,AD> listener){
+        recyclerViewHelper.setOnItemChildClickListener(listener);
+    }
+    public void setOnItemChildLongClickListener(final OnItemChildLongClickListener<ADT,AD> listener){
+        recyclerViewHelper.setOnItemChildLongClickListener(listener);
     }
     /**
      * 设置表格布局横向item个数

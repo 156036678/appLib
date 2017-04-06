@@ -32,7 +32,7 @@ public class DaoHelper<T> {
      * <BR/>
      * DatabaseUtils  bru=new DatabaseUtils(context);
      * <BR/>
-     * bru.setDatabasePath(helper, SystemUtil.getInstance().getSDPath(context)+"/."+context.getPackageName(),"app.db",1);
+     * bru.setDatabasePath(helper, AppHelper.getInstance().getSDPath(context)+"/."+context.getPackageName(),"app.db",1);
      * <BR/>
      * dao = helper.getDao(beanClass);
      */
@@ -58,7 +58,7 @@ public class DaoHelper<T> {
                 this.beanClass = beanClass.newInstance();
                 AppDatabaseHelper helper = new AppDatabaseHelper();
                 //  DatabaseUtils  bru=new DatabaseUtils(context);
-                //  bru.setDatabasePath(helper, SystemUtil.getInstance().getSDPath(context)+"/."+context.getPackageName(),"app.db",1);
+                //  bru.setDatabasePath(helper, AppHelper.getInstance().getSDPath(context)+"/."+context.getPackageName(),"app.db",1);
                 dao = helper.getDao(beanClass);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -82,7 +82,7 @@ public class DaoHelper<T> {
                 this.beanClass = beanClass.newInstance();
                 AppDatabaseHelper helper = new AppDatabaseHelper(DATABASE_NAME);
                 //  DatabaseUtils  bru=new DatabaseUtils(context);
-                //  bru.setDatabasePath(helper, SystemUtil.getInstance().getSDPath(context)+"/."+context.getPackageName(),"app.db",1);
+                //  bru.setDatabasePath(helper, AppHelper.getInstance().getSDPath(context)+"/."+context.getPackageName(),"app.db",1);
                 dao = helper.getDao(beanClass);
             } catch (Exception e) {
                 e.printStackTrace();

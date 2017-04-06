@@ -12,6 +12,7 @@ import com.bumptech.glide.DrawableTypeRequest;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.xiay.applib.R;
+import com.xiay.applib.config.ConfigUrl;
 import com.xiay.applib.imageselector.ImageSelectorConfig;
 import com.xiay.applib.imageselector.model.LocalMedia;
 import com.xiay.applib.imageselector.view.ImagePreviewDeleteActivity;
@@ -21,8 +22,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.xiay.bean.HttpConfig;
-import cn.xiay.util.SystemUtil;
+import cn.xiay.util.AppHelper;
 
 /**
  * @author Xiay
@@ -89,14 +89,14 @@ public class ImageSelectorAdapter extends RecyclerView.Adapter<ImageSelectorAdap
             final DrawableTypeRequest request;
             if (images.get(position) != addIcon) {
                 if (images.get(position).getPath().startsWith(ImageSelectorConfig.serverPathStartWith)){
-                    request= manager.load(HttpConfig.UrlHead+images.get(position).getPath());
+                    request= manager.load(ConfigUrl.getDomain()+images.get(position).getPath());
                 }else {
                     request= manager.load(new File(images.get(position).getPath()));
                 }
                 request.centerCrop().into(holder.imageView);
 
             } else {
-                manager.load(SystemUtil.getInstance().resIdToUri(ctx, addIcon.getAddIconResId())).centerCrop().into(holder.imageView);
+                manager.load(AppHelper.getInstance().resIdToUri(addIcon.getAddIconResId())).centerCrop().into(holder.imageView);
             }
             holder.imageView.setOnClickListener(new View.OnClickListener() {
                 @Override

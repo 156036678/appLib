@@ -12,29 +12,12 @@ import com.xiay.applib.view.recyclerview.RecyclerBaseAdapter;
  * of all the SimpleClickListener. This implements all methods in the
  * {@link SimpleClickListener}
  */
-public abstract   class OnItemClickListener<T extends RecyclerBaseAdapter> extends SimpleClickListener {
-
-
+public abstract   class OnItemClickListener<ADT,AD extends RecyclerBaseAdapter<ADT>> implements RecyclerBaseAdapter.OnItemClickListener {
     @Override
     public void onItemClick(RecyclerBaseAdapter adapter, View view, int position) {
-        itemClick((T)adapter,view,position);
+        onItemClick((AD)adapter,view,(ADT)adapter.getItem(position),position);
     }
 
-    @Override
-    public void onItemLongClick(RecyclerBaseAdapter adapter, View view, int position) {
-        itemLongClick((T)adapter,view,position);
-    }
+    public abstract void onItemClick(AD adapter, View view, ADT item,int position) ;
 
-    @Override
-    public void onItemChildClick(RecyclerBaseAdapter adapter, View view, int position) {
-        itemChildClick((T)adapter,view,position);
-    }
-
-    @Override
-    public void onItemChildLongClick(RecyclerBaseAdapter adapter, View view, int position) {
-
-    }
-    public abstract void itemClick(T adapter, View view, int position);
-    public  void itemChildClick(T adapter, View view, int position){}
-    public  void itemLongClick(T adapter, View view, int position){}
 }

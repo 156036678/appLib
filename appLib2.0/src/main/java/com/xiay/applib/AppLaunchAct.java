@@ -15,7 +15,7 @@ import com.xiay.applib.listener.HttpCallBack;
 import com.xiay.applib.service.AppDownPicService;
 import com.xiay.applib.util.rxjava.RxUtil;
 import com.xiay.applib.util.rxjava.bean.RxIOTask;
-import com.xiay.applib.util.rxjava.bean.RxTask;
+import com.xiay.applib.util.rxjava.bean.RxIOUITask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,7 +45,7 @@ public abstract class AppLaunchAct extends AppActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        RxUtil.executeRxTask(new RxTask<Boolean>() {
+        RxUtil.executeRxTaskInIO(new RxIOUITask<Boolean>() {
             @Override
             public void doInIOThread() {
                 if ((getIntent().getFlags() & Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT) != 0) {//避免华为手机返回桌面后重启应用

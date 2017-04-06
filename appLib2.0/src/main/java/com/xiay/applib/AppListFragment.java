@@ -1,6 +1,8 @@
 package com.xiay.applib;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -10,13 +12,16 @@ import android.widget.TextView;
 import com.nohttp.extra.HttpListener;
 import com.nohttp.rest.Response;
 import com.xiay.applib.view.recyclerview.RecyclerBaseAdapter;
-import com.xiay.applib.view.recyclerview.listener.OnListItemClickListener;
+import com.xiay.applib.view.recyclerview.listener.OnItemChildClickListener;
+import com.xiay.applib.view.recyclerview.listener.OnItemChildLongClickListener;
+import com.xiay.applib.view.recyclerview.listener.OnItemClickListener;
+import com.xiay.applib.view.recyclerview.listener.OnItemLongClickListener;
 import com.xiay.applib.view.recyclerview.util.RecyclerViewHelper;
 
 import java.util.List;
 
 import cn.xiay.ui.Toast;
-import cn.xiay.util.ViewUtil;
+import cn.xiay.util.autolayout.utils.AutoUtils;
 
 /***
  *@author Xiay
@@ -24,7 +29,7 @@ import cn.xiay.util.ViewUtil;
  * @param <ADT> Adapter 数据类型
  * @param <AD>Adapter 类型
  */
-public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>> extends AppFragment  implements OnListItemClickListener<ADT,AD>, SwipeRefreshLayout.OnRefreshListener, RecyclerBaseAdapter.RequestLoadMoreListener, HttpListener<RQ> {
+public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>> extends AppFragment  implements  SwipeRefreshLayout.OnRefreshListener, RecyclerBaseAdapter.RequestLoadMoreListener, HttpListener<RQ> {
 	private ViewGroup emptyView;
 	public RecyclerView rv_list;
 	public AD adapter;
@@ -37,6 +42,17 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 		super.onAttach(context);
 		activity.isAutoShowNoNetwork=false;
 	}
+
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		recyclerViewHelper = new RecyclerViewHelper();
+	}
+
+	public RecyclerViewHelper getRecyclerViewHelper() {
+		return recyclerViewHelper;
+	}
+
 	public void initListViewWithLine(View v, AD adapter, String emptyMessage) {
 		initListView(v,-2,adapter,emptyMessage);
 	}
@@ -69,10 +85,22 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 		viewRoot=v;
 		this.adapter=adapter;
 		rv_list = (RecyclerView) v.findViewById(R.id.rv_list);
-		recyclerViewHelper = new RecyclerViewHelper(activity, rv_list, adapter,this, emptyMessage);
+		recyclerViewHelper.setRecyclerView(rv_list,adapter,emptyMessage);
 		View swipeLayout=v.findViewById(R.id.swipeLayout);
 		if (swipeLayout!=null)
 			recyclerViewHelper.setOnRefreshListener(swipeLayout,this);
+	}
+	public void setOnItemClickListener(final OnItemClickListener<ADT,AD> listener){
+		recyclerViewHelper.setOnItemClickListener(listener);
+	}
+	public void setOnItemLongClickListener(final OnItemLongClickListener<ADT,AD> listener){
+		recyclerViewHelper.setOnItemLongClickListener(listener);
+	}
+	public void setOnItemChildClickListener(final OnItemChildClickListener<ADT,AD> listener){
+		recyclerViewHelper.setOnItemChildClickListener(listener);
+	}
+	public void setOnItemChildLongClickListener(final OnItemChildLongClickListener<ADT,AD> listener){
+		recyclerViewHelper.setOnItemChildLongClickListener(listener);
 	}
 	/**
 	 * 设置表格布局横向item个数
@@ -109,7 +137,8 @@ public abstract class AppListFragment<RQ,ADT,AD extends RecyclerBaseAdapter<ADT>
 		if (emptyView == null) {
 			emptyView = (ViewGroup) activity.getLayoutInflater().inflate(R.layout.app_empty_view, (ViewGroup) rv_list.getParent(), false);
 			((TextView) emptyView.findViewById(R.id.tv_empty)).setText(text);
-			ViewUtil.scaleContentView(emptyView);
+			//ViewUtil.scaleContentView(emptyView);
+			AutoUtils.auto(emptyView);
 		}
 		return emptyView;
 	}

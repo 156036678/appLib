@@ -10,7 +10,7 @@ import com.xiay.applib.AppActivity;
 import com.xiay.applib.listener.HttpCallBack;
 import com.xiay.applib.ui.dialog.MyProgressDialog;
 import com.xiay.applib.util.rxjava.RxUtil;
-import com.xiay.applib.util.rxjava.bean.RxTask;
+import com.xiay.applib.util.rxjava.bean.RxNewThreadUITask;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -52,9 +52,9 @@ public class UploadUtil {
         progressDialog.showLoading(progressMsg+"准备中…");
         progressDialog.setCancelable(false);
         this.listener=listener;
-        RxUtil.executeRxTask(new RxTask() {
+        RxUtil.executeRxTaskInNewThread(new RxNewThreadUITask<Object>() {
             @Override
-            public void doInIOThread() {
+            public void doInNewThread() {
                 int i=0;
                 ImageUtil imageUtil=new ImageUtil(activity);
                 for (Map<String,Object>  map:formNameList) {

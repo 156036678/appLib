@@ -1,12 +1,11 @@
 package com.xiay.applib.bean;
 
-import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.io.File;
 
-import cn.xiay.util.SystemUtil;
+import cn.xiay.util.AppHelper;
 
 /**
  * @Xaiy
@@ -37,16 +36,15 @@ public class DownFileInfo  implements Parcelable{
 
     /**
      * fileFolder dir: /data/data/package/fileName
-     * @param context
      * @return
      */
-    public DownFileInfo(Context context,String url, String fileName) {
+    public DownFileInfo(String url, String fileName) {
         this.url=url;
         this.fileName=fileName;
-        this.fileFolder=getDataDir(context);
+        this.fileFolder=getDataDir();
     }
-    public String getDataDir(Context context){
-        return  new File(SystemUtil.getInstance().getDataDirectory(context), fileName).getAbsolutePath();
+    public String getDataDir(){
+        return  new File(AppHelper.getInstance().getDataDirectory(), fileName).getAbsolutePath();
     }
     @Override
     public int describeContents() {

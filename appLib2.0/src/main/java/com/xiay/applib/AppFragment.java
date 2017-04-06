@@ -6,14 +6,11 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.xiay.applib.util.rxjava.RxManager;
 
 import java.util.Map;
-
-import cn.xiay.util.ViewUtil;
 
 public abstract class AppFragment extends Fragment {
     protected boolean isScaleView = true;
@@ -50,12 +47,12 @@ public abstract class AppFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         setPageTitle(setTitle());
         setPageHeadColor(setPageHeadColor());
-        if (isScaleView){
-           if(view instanceof ViewGroup)
-               ViewUtil.scaleContentView((ViewGroup) getView());
-            else
-               ViewUtil.scaleView(view);
-        }
+//        if (isScaleView){
+//           if(view instanceof ViewGroup)
+//               ViewUtil.scaleContentView((ViewGroup) getView());
+//            else
+//               ViewUtil.scaleView(view);
+//        }
 
     }
 
@@ -161,5 +158,13 @@ public abstract class AppFragment extends Fragment {
             rxManager.clear();
         }
     }
-
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if ((isVisibleToUser && isResumed())) {
+            onResume();
+        } else if (!isVisibleToUser) {
+            onPause();
+        }
+    }
 }

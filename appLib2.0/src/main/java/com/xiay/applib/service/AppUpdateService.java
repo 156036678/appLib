@@ -39,7 +39,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import cn.xiay.util.SystemUtil;
+import cn.xiay.util.AppHelper;
 
 /***
  * 升级服务
@@ -93,7 +93,7 @@ public class AppUpdateService extends Service {
   /**创建文件是否成功 成功返回true */
 	private boolean  createFile(String appName) {
 		if (android.os.Environment.MEDIA_MOUNTED.equals(android.os.Environment.getExternalStorageState())) {
-			 savePath = new File(  SystemUtil.getInstance().getSDPath(getApplication())+ "/updateApp/");
+			 savePath = new File(  AppHelper.getInstance().getSDPath()+ "/updateApp/");
 			filePath = new File(savePath + "/" + appName + ".apk");
 			if (!savePath.exists()) {
 				savePath.mkdirs();
@@ -127,7 +127,7 @@ public class AppUpdateService extends Service {
 
 					/*********下载完成，点击安装***********/
 					String strFilePath=filePath.getAbsolutePath();
-					SystemUtil.getInstance().installApk(getApplication(),strFilePath);
+					AppHelper.getInstance().installApk(getApplication(),strFilePath);
 					contentView.setTextViewText(R.id.notificationTitle,"下载完成，点击安装");
 					contentView.setTextViewText(R.id.notificationPercent,"100%");
 					contentView.setProgressBar(R.id.notificationProgress, 100, 100, false);

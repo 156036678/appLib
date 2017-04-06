@@ -9,7 +9,7 @@
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY RecyclerViewHolderIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -20,7 +20,9 @@ import android.content.Context;
 import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.LayoutParams;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -44,56 +46,28 @@ import com.xiay.applib.view.recyclerview.loadmore.SimpleLoadMoreView;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-
-import cn.xiay.util.ViewUtil;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 
-public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<RecyclerViewHolder> {
+public abstract class RecyclerBaseAdapter<ADT> extends RecyclerView.Adapter<RecyclerViewHolder> {
 
     //load more
     private boolean mNextLoadEnable = false;
     private boolean mLoadMoreEnable = false;
-    private RequestLoadMoreListener mRequestLoadMoreListener;
     private boolean mLoading = false;
-
-    private boolean mFirstOnlyEnable = true;
-    private boolean mOpenAnimationEnable = false;
-    private Interpolator mInterpolator = new LinearInterpolator();
-    private int mDuration = 300;
-    private int mLastPosition = -1;
-    //@AnimationType
-    private BaseAnimation mCustomAnimation;
-    private BaseAnimation mSelectAnimation = new AlphaInAnimation();
-    //header footer
-    private LinearLayout mHeaderLayout;
-    private LinearLayout mFooterLayout;
-    //empty
-    private FrameLayout mEmptyView;
-    private boolean mIsUseEmpty = true;
-    private boolean mHeadAndEmptyEnable;
-    private boolean mFootAndEmptyEnable;
-
-    protected Context mContext;
-    protected int mLayoutResId;
-    protected LayoutInflater mLayoutInflater;
-    protected List<T> mData;
-    public static final int HEADER_VIEW = 0x00000111;
-    public static final int LOADING_VIEW = 0x00000222;
-    public static final int FOOTER_VIEW = 0x00000333;
-    public static final int EMPTY_VIEW = 0x00000555;
     private LoadMoreView mLoadMoreView = new SimpleLoadMoreView();
+    private RequestLoadMoreListener mRequestLoadMoreListener;
 
-
-    @IntDef({ALPHAIN, SCALEIN, SLIDEIN_BOTTOM, SLIDEIN_LEFT, SLIDEIN_RIGHT})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface AnimationType {
-    }
-
+    //Animation
     /**
      * Use with {@link #openLoadAnimation}
      */
@@ -114,12 +88,155 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      * Use with {@link #openLoadAnimation}
      */
     public static final int SLIDEIN_RIGHT = 0x00000005;
+    private OnItemClickListener mOnAdapterItemClickListener;
+    private OnItemLongClickListener mOnItemLongClickListener;
+    private OnItemChildClickListener mOnItemChildClickListener;
+    private OnItemChildLongClickListener mOnItemChildLongClickListener;
 
+    @IntDef({ALPHAIN, SCALEIN, SLIDEIN_BOTTOM, SLIDEIN_LEFT, SLIDEIN_RIGHT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface AnimationType {
+    }
+
+    private boolean mFirstOnlyEnable = true;
+    private boolean mOpenAnimationEnable = false;
+    private Interpolator mInterpolator = new LinearInterpolator();
+    private int mDuration = 300;
+    private int mLastPosition = -1;
+
+    private BaseAnimation mCustomAnimation;
+    private BaseAnimation mSelectAnimation = new AlphaInAnimation();
+    //header footer
+    private LinearLayout mHeaderLayout;
+    private LinearLayout mFooterLayout;
+    //empty
+    private FrameLayout mEmptyLayout;
+    private boolean mIsUseEmpty = true;
+    private boolean mHeadAndEmptyEnable;
+    private boolean mFootAndEmptyEnable;
+
+    protected static final String TAG = RecyclerBaseAdapter.class.getSimpleName();
+    protected Context mContext;
+    protected int mLayoutResId;
+    protected LayoutInflater mLayoutInflater;
+    protected List<ADT> mData;
+    public static final int HEADER_VIEW = 0x00000111;
+    public static final int LOADING_VIEW = 0x00000222;
+    public static final int FOOTER_VIEW = 0x00000333;
+    public static final int EMPTY_VIEW = 0x00000555;
+
+    private RecyclerView mRecyclerView;
+
+    protected RecyclerView getRecyclerView() {
+        return mRecyclerView;
+    }
+
+    private void setRecyclerView(RecyclerView recyclerView) {
+        mRecyclerView = recyclerView;
+    }
+
+    private void checkNotNull() {
+        if (getRecyclerView() == null) {
+            throw new RuntimeException("please bind recyclerView first!");
+        }
+    }
+
+    /**
+     * same as recyclerView.setAdapter(), and save the instance of recyclerView
+     */
+    public void bindToRecyclerView(RecyclerView recyclerView) {
+        if (getRecyclerView() != null) {
+            throw new RuntimeException("Don't bind twice");
+        }
+        setRecyclerView(recyclerView);
+        getRecyclerView().setAdapter(this);
+    }
+
+    /**
+     * @see #setOnLoadMoreListener(RequestLoadMoreListener, RecyclerView)
+     * @deprecated This method is because it can lead to crash: always call this method while RecyclerView is computing a layout or scrolling.
+     * Please use {@link #setOnLoadMoreListener(RequestLoadMoreListener, RecyclerView)}
+     */
+    @Deprecated
     public void setOnLoadMoreListener(RequestLoadMoreListener requestLoadMoreListener) {
+        openLoadMore(requestLoadMoreListener);
+    }
+
+    private void openLoadMore(RequestLoadMoreListener requestLoadMoreListener) {
         this.mRequestLoadMoreListener = requestLoadMoreListener;
         mNextLoadEnable = true;
         mLoadMoreEnable = true;
         mLoading = false;
+    }
+
+    public void setOnLoadMoreListener(RequestLoadMoreListener requestLoadMoreListener, RecyclerView recyclerView) {
+        openLoadMore(requestLoadMoreListener);
+        if (getRecyclerView() == null) {
+            setRecyclerView(recyclerView);
+        }
+    }
+
+    /**
+     * bind recyclerView {@link #bindToRecyclerView(RecyclerView)} before use!
+     *
+     * @see #disableLoadMoreIfNotFullPage(RecyclerView)
+     */
+    public void disableLoadMoreIfNotFullPage() {
+        checkNotNull();
+        disableLoadMoreIfNotFullPage(getRecyclerView());
+    }
+
+    /**
+     * check if full page after {@link #setNewData(List)}, if full, it will enable load more again.
+     *
+     * @param recyclerView your recyclerView
+     * @see #setNewData(List)
+     */
+    public void disableLoadMoreIfNotFullPage(RecyclerView recyclerView) {
+        if (recyclerView == null) return;
+        RecyclerView.LayoutManager manager = recyclerView.getLayoutManager();
+        if (manager == null) return;
+        if (manager instanceof LinearLayoutManager) {
+            final LinearLayoutManager linearLayoutManager = (LinearLayoutManager) manager;
+            recyclerView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if ((linearLayoutManager.findLastCompletelyVisibleItemPosition() + 1) != getItemCount()) {
+                        setEnableLoadMore(true);
+                    }
+                }
+            }, 50);
+        } else if (manager instanceof StaggeredGridLayoutManager) {
+            final StaggeredGridLayoutManager staggeredGridLayoutManager = (StaggeredGridLayoutManager) manager;
+            recyclerView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    final int[] positions = new int[staggeredGridLayoutManager.getSpanCount()];
+                    staggeredGridLayoutManager.findLastCompletelyVisibleItemPositions(positions);
+                    int pos = getTheBiggestNumber(positions) + 1;
+                    if (pos != getItemCount()) {
+                        setEnableLoadMore(true);
+                    }
+                }
+            }, 50);
+        }
+    }
+
+    private int getTheBiggestNumber(int[] numbers) {
+        int tmp = -1;
+        if (numbers == null || numbers.length == 0) {
+            return tmp;
+        }
+        for (int num : numbers) {
+            if (num > tmp) {
+                tmp = num;
+            }
+        }
+        return tmp;
+    }
+
+    public void setNotDoAnimationCount(int count) {
+        mLastPosition = count;
     }
 
     /**
@@ -136,7 +253,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      *
      * @return 0 or 1
      */
-    private int getLoadMoreViewCount() {
+    public int getLoadMoreViewCount() {
         if (mRequestLoadMoreListener == null || !mLoadMoreEnable) {
             return 0;
         }
@@ -167,6 +284,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
 
     /**
      * Refresh end, no more data
+     *
      * @param gone if true gone the load more view
      */
     public void loadMoreEnd(boolean gone) {
@@ -175,8 +293,8 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
         }
         mLoading = false;
         mNextLoadEnable = false;
-        mLoadMoreView.setLoadMoreEndGone(!gone);
-        if (!gone) {
+        mLoadMoreView.setLoadMoreEndGone(gone);
+        if (gone) {
             notifyItemRemoved(getHeaderLayoutCount() + mData.size() + getFooterLayoutCount());
         } else {
             mLoadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_END);
@@ -210,6 +328,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
 
     /**
      * Set the enabled state of load more.
+     *
      * @param enable True if load more is enabled, false otherwise.
      */
     public void setEnableLoadMore(boolean enable) {
@@ -231,6 +350,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
 
     /**
      * Returns the enabled status for load more.
+     *
      * @return True if load more is enabled, false otherwise.
      */
     public boolean isLoadMoreEnable() {
@@ -254,66 +374,28 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      * @param layoutResId The layout resource id of each item.
      * @param data        A new list is created out of this one to avoid mutable list
      */
-    public RecyclerBaseAdapter(int layoutResId, List<T> data) {
-        this.mData = data == null ? new ArrayList<T>() : data;
+    public RecyclerBaseAdapter(int layoutResId, List<ADT> data) {
+        this.mData = data == null ? new ArrayList<ADT>() : data;
         if (layoutResId != 0) {
             this.mLayoutResId = layoutResId;
         }
     }
-    public RecyclerBaseAdapter() {
-        this.mData =  new ArrayList<>();
-    }
-    public RecyclerBaseAdapter(List<T> data) {
+
+    public RecyclerBaseAdapter(List<ADT> data) {
         this(0, data);
     }
 
     public RecyclerBaseAdapter(int layoutResId) {
-        this.mData =  new ArrayList<T>();
-        if (layoutResId != 0) {
-            this.mLayoutResId = layoutResId;
-        }
+        this(layoutResId, null);
     }
-
-    /**
-     * * remove the item associated with the specified position of adapter
-     * @param position
-     * @return ture if mData=0;
-     */
-
-    public boolean remove(int position) {
-        mData.remove(position);
-        notifyItemRemoved(position + getHeaderLayoutCount());
-        return mData.size()==0;
-
-    }
-    public boolean remove(T data) {
-        mData.remove(data);
-        return mData.size()==0;
-
-    }
-
-    /**
-     * insert  a item associated with the specified position of adapter
-     *
-     * @param position
-     * @param item
-     */
-    public void add(int position, T item) {
-        mData.add(position, item);
-        notifyItemInserted(position + getHeaderLayoutCount());
-    }
-
 
     /**
      * setting up a new instance to data;
      *
      * @param data
      */
-    public void setNewData(List<T> data) {
-        if (mData!=null){
-            mData.clear();
-            mData.addAll(data);
-        }
+    public void setNewData(List<ADT> data) {
+        this.mData = data == null ? new ArrayList<ADT>() : data;
         if (mRequestLoadMoreListener != null) {
             mNextLoadEnable = true;
             mLoadMoreEnable = true;
@@ -324,26 +406,66 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
         notifyDataSetChanged();
     }
 
+
+    /**
+     * insert  a item associated with the specified position of adapter
+     *
+     * @param position
+     * @param item
+     * @deprecated use {@link #addData(int, Object)} instead
+     */
+    @Deprecated
+    public void add(int position, ADT item) {
+        addData(position, item);
+    }
+
     /**
      * add one new data in to certain location
      *
      * @param position
      */
-    public void addData(int position, T data) {
-        if (0 <= position && position < mData.size()) {
-            mData.add(position, data);
-            notifyItemInserted(position + getHeaderLayoutCount());
-        } else {
-            throw new ArrayIndexOutOfBoundsException("inserted position most greater than 0 and less than data size");
-        }
+    public void addData(int position, ADT data) {
+        mData.add(position, data);
+        notifyItemInserted(position + getHeaderLayoutCount());
+        compatibilityDataSizeChanged(1);
     }
 
     /**
      * add one new data
      */
-    public void addData(T data) {
+    public void addData(ADT data) {
         mData.add(data);
         notifyItemInserted(mData.size() + getHeaderLayoutCount());
+        compatibilityDataSizeChanged(1);
+    }
+
+    /**
+     * remove the item associated with the specified position of adapter
+     *
+     * @param position
+     * @return ture if mData=0;
+     */
+    public boolean remove(int position) {
+        mData.remove(position);
+        int internalPosition = position + getHeaderLayoutCount();
+        notifyItemRemoved(internalPosition);
+        compatibilityDataSizeChanged(0);
+        notifyItemRangeChanged(internalPosition, mData.size() - internalPosition);
+        return mData.size() == 0;
+    }
+
+    public boolean remove(ADT data) {
+        mData.remove(data);
+        return mData.size() == 0;
+
+    }
+
+    /**
+     * change data
+     */
+    public void setData(int index, ADT data) {
+        mData.set(index, data);
+        notifyItemChanged(index + getHeaderLayoutCount());
     }
 
     /**
@@ -351,13 +473,10 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      *
      * @param position
      */
-    public void addData(int position, List<T> data) {
-        if (0 <= position && position < mData.size()) {
-            mData.addAll(position, data);
-            notifyItemRangeInserted(position + getHeaderLayoutCount(), data.size());
-        } else {
-            throw new ArrayIndexOutOfBoundsException("inserted position most greater than 0 and less than data size");
-        }
+    public void addData(int position, List<ADT> data) {
+        mData.addAll(position, data);
+        notifyItemRangeInserted(position + getHeaderLayoutCount(), data.size());
+        compatibilityDataSizeChanged(data.size());
     }
 
     /**
@@ -365,9 +484,22 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      *
      * @param newData
      */
-    public void addData(List<T> newData) {
+    public void addData(List<ADT> newData) {
         this.mData.addAll(newData);
         notifyItemRangeInserted(mData.size() - newData.size() + getHeaderLayoutCount(), newData.size());
+        compatibilityDataSizeChanged(newData.size());
+    }
+
+    /**
+     * compatible getLoadMoreViewCount and getEmptyViewCount may change
+     *
+     * @param size Need compatible data size
+     */
+    private void compatibilityDataSizeChanged(int size) {
+        final int dataSize = mData == null ? 0 : mData.size();
+        if (dataSize == size) {
+            notifyDataSetChanged();
+        }
     }
 
     /**
@@ -375,17 +507,8 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      *
      * @return
      */
-    public List<T> getData() {
+    public List<ADT> getData() {
         return mData;
-    }
-
-    public void setData(List<T> data) {
-        if (mData!=null){
-            mData.addAll(data);
-        }else {
-            this.mData = data;
-
-        }
     }
 
     /**
@@ -395,8 +518,11 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      *                 data set.
      * @return The data at the specified position.
      */
-    public T getItem(int position) {
-        return mData.get(position);
+    public ADT getItem(int position) {
+        if (position != -1)
+            return mData.get(position);
+        else
+            return null;
     }
 
     /**
@@ -442,12 +568,12 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
     }
 
     /**
-     * if mEmptyView will be return 1 or not will be return 0
+     * if show empty view will be return 1 or not will be return 0
      *
      * @return
      */
     public int getEmptyViewCount() {
-        if (mEmptyView == null || mEmptyView.getChildCount() == 0) {
+        if (mEmptyLayout == null || mEmptyLayout.getChildCount() == 0) {
             return 0;
         }
         if (!mIsUseEmpty) {
@@ -528,7 +654,8 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
     public RecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         RecyclerViewHolder baseViewHolder = null;
         this.mContext = parent.getContext();
-        this.mLayoutInflater = LayoutInflater.from(mContext);
+        if (mLayoutInflater == null)
+            this.mLayoutInflater = LayoutInflater.from(mContext);
         switch (viewType) {
             case LOADING_VIEW:
                 baseViewHolder = getLoadingView(parent);
@@ -537,14 +664,16 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
                 baseViewHolder = createRecyclerViewHolder(mHeaderLayout);
                 break;
             case EMPTY_VIEW:
-                baseViewHolder = createRecyclerViewHolder(mEmptyView);
+                baseViewHolder = createRecyclerViewHolder(mEmptyLayout);
                 break;
             case FOOTER_VIEW:
                 baseViewHolder = createRecyclerViewHolder(mFooterLayout);
                 break;
             default:
                 baseViewHolder = onCreateDefViewHolder(parent, viewType);
+                bindViewClickListener(baseViewHolder);
         }
+        baseViewHolder.setAdapter(this);
         return baseViewHolder;
 
     }
@@ -593,7 +722,8 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      */
     protected void setFullSpan(RecyclerView.ViewHolder holder) {
         if (holder.itemView.getLayoutParams() instanceof StaggeredGridLayoutManager.LayoutParams) {
-            StaggeredGridLayoutManager.LayoutParams params = (StaggeredGridLayoutManager.LayoutParams) holder.itemView.getLayoutParams();
+            StaggeredGridLayoutManager.LayoutParams params = (StaggeredGridLayoutManager.LayoutParams) holder
+                    .itemView.getLayoutParams();
             params.setFullSpan(true);
         }
     }
@@ -609,15 +739,17 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
                 public int getSpanSize(int position) {
                     int type = getItemViewType(position);
                     if (mSpanSizeLookup == null)
-                        return (type == EMPTY_VIEW || type == HEADER_VIEW || type == FOOTER_VIEW || type == LOADING_VIEW) ? gridManager.getSpanCount() : 1;
+                        return (type == EMPTY_VIEW || type == HEADER_VIEW || type == FOOTER_VIEW || type ==
+                                LOADING_VIEW) ? gridManager.getSpanCount() : 1;
                     else
-                        return (type == EMPTY_VIEW || type == HEADER_VIEW || type == FOOTER_VIEW || type == LOADING_VIEW) ? gridManager.getSpanCount() : mSpanSizeLookup.getSpanSize(gridManager, position - getHeaderLayoutCount());
+                        return (type == EMPTY_VIEW || type == HEADER_VIEW || type == FOOTER_VIEW || type ==
+                                LOADING_VIEW) ? gridManager.getSpanCount() : mSpanSizeLookup.getSpanSize(gridManager,
+                                position - getHeaderLayoutCount());
                 }
             });
         }
     }
 
-    private boolean flag = true;
     private SpanSizeLookup mSpanSizeLookup;
 
     public interface SpanSizeLookup {
@@ -644,6 +776,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
 
         switch (viewType) {
             case 0:
+
                 convert(holder, mData.get(holder.getLayoutPosition() - getHeaderLayoutCount()));
                 break;
             case LOADING_VIEW:
@@ -659,6 +792,36 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
                 convert(holder, mData.get(holder.getLayoutPosition() - getHeaderLayoutCount()));
                 break;
         }
+    }
+
+    private void bindViewClickListener(final RecyclerViewHolder baseViewHolder) {
+        if (baseViewHolder == null) {
+            return;
+        }
+        final View view = baseViewHolder.getConvertView();
+        if (view == null) {
+            return;
+        }
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (getOnAdapterItemClickListener() != null && baseViewHolder != null) {
+
+                    getOnAdapterItemClickListener().onItemClick(RecyclerBaseAdapter.this, v, baseViewHolder.getLayoutPosition() - getHeaderLayoutCount());
+                }
+
+            }
+        });
+        view.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (getOnItemLongClickListener() != null && baseViewHolder != null) {
+                    return getOnItemLongClickListener().onItemLongClick(RecyclerBaseAdapter.this, v, baseViewHolder.getLayoutPosition() - getHeaderLayoutCount());
+                }
+                return false;
+
+            }
+        });
     }
 
     protected RecyclerViewHolder onCreateDefViewHolder(ViewGroup parent, int viewType) {
@@ -677,12 +840,74 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      * @return new ViewHolder
      */
     protected RecyclerViewHolder createRecyclerViewHolder(View view) {
-        return (RecyclerViewHolder) new RecyclerViewHolder(view);
+        Class temp = getClass();
+        Class z = null;
+        while (z == null && null != temp) {
+            z = getInstancedGenericRecyclerViewHolderClass(temp);
+            temp = temp.getSuperclass();
+        }
+        RecyclerViewHolder k = createGenericRecyclerViewHolderInstance(z, view);
+        return null != k ? k : (RecyclerViewHolder) new RecyclerViewHolder(view);
+    }
+
+    /**
+     * try to create Generic RecyclerViewHolder instance
+     *
+     * @param z
+     * @param view
+     * @return
+     */
+    private RecyclerViewHolder createGenericRecyclerViewHolderInstance(Class z, View view) {
+        try {
+            Constructor constructor;
+            String buffer = Modifier.toString(z.getModifiers());
+            String className = z.getName();
+            // inner and unstatic class
+            if (className.contains("$") && !buffer.contains("static")) {
+                constructor = z.getDeclaredConstructor(getClass(), View.class);
+                return (RecyclerViewHolder) constructor.newInstance(this, view);
+            } else {
+                constructor = z.getDeclaredConstructor(View.class);
+                return (RecyclerViewHolder) constructor.newInstance(view);
+            }
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * get generic parameter RecyclerViewHolder
+     *
+     * @param z
+     * @return
+     */
+    private Class getInstancedGenericRecyclerViewHolderClass(Class z) {
+        Type type = z.getGenericSuperclass();
+        if (type instanceof ParameterizedType) {
+            Type[] types = ((ParameterizedType) type).getActualTypeArguments();
+            for (Type temp : types) {
+                if (temp instanceof Class) {
+                    Class tempClass = (Class) temp;
+                    if (RecyclerViewHolder.class.isAssignableFrom(tempClass)) {
+                        return tempClass;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
      * Return root layout of header
      */
+
     public LinearLayout getHeaderLayout() {
         return mHeaderLayout;
     }
@@ -699,8 +924,8 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      *
      * @param header
      */
-    public void addHeaderView(View header) {
-        addHeaderView(header, -1);
+    public int addHeaderView(View header) {
+        return addHeaderView(header, -1);
     }
 
     /**
@@ -713,8 +938,8 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      *               When index = -1 or index >= child count in mHeaderLayout,
      *               the effect of this method is the same as that of {@link #addHeaderView(View)}.
      */
-    public void addHeaderView(View header, int index) {
-        addHeaderView(header, index, LinearLayout.VERTICAL);
+    public int addHeaderView(View header, int index) {
+        return addHeaderView(header, index, LinearLayout.VERTICAL);
     }
 
     /**
@@ -722,7 +947,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      * @param index
      * @param orientation
      */
-    public void addHeaderView(View header, int index, int orientation) {
+    public int addHeaderView(View header, int index, int orientation) {
         if (mHeaderLayout == null) {
             mHeaderLayout = new LinearLayout(header.getContext());
             if (orientation == LinearLayout.VERTICAL) {
@@ -733,13 +958,35 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
                 mHeaderLayout.setLayoutParams(new LayoutParams(WRAP_CONTENT, MATCH_PARENT));
             }
         }
-        index = index >= mHeaderLayout.getChildCount() ? -1 : index;
+        final int childCount = mHeaderLayout.getChildCount();
+        if (index < 0 || index > childCount) {
+            index = childCount;
+        }
         mHeaderLayout.addView(header, index);
         if (mHeaderLayout.getChildCount() == 1) {
             int position = getHeaderViewPosition();
             if (position != -1) {
                 notifyItemInserted(position);
             }
+        }
+        return index;
+    }
+
+    public int setHeaderView(View header) {
+        return setHeaderView(header, 0, LinearLayout.VERTICAL);
+    }
+
+    public int setHeaderView(View header, int index) {
+        return setHeaderView(header, index, LinearLayout.VERTICAL);
+    }
+
+    public int setHeaderView(View header, int index, int orientation) {
+        if (mHeaderLayout == null || mHeaderLayout.getChildCount() <= index) {
+            return addHeaderView(header, index, orientation);
+        } else {
+            mHeaderLayout.removeViewAt(index);
+            mHeaderLayout.addView(header, index);
+            return index;
         }
     }
 
@@ -748,8 +995,12 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      *
      * @param footer
      */
-    public void addFooterView(View footer) {
-        addFooterView(footer, -1);
+    public int addFooterView(View footer) {
+        return addFooterView(footer, -1, LinearLayout.VERTICAL);
+    }
+
+    public int addFooterView(View footer, int index) {
+        return addFooterView(footer, index, LinearLayout.VERTICAL);
     }
 
     /**
@@ -762,19 +1013,46 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      *               When index = -1 or index >= child count in mFooterLayout,
      *               the effect of this method is the same as that of {@link #addFooterView(View)}.
      */
-    public void addFooterView(View footer, int index) {
+    public int addFooterView(View footer, int index, int orientation) {
         if (mFooterLayout == null) {
             mFooterLayout = new LinearLayout(footer.getContext());
-            mFooterLayout.setOrientation(LinearLayout.VERTICAL);
-            mFooterLayout.setLayoutParams(new LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+            if (orientation == LinearLayout.VERTICAL) {
+                mFooterLayout.setOrientation(LinearLayout.VERTICAL);
+                mFooterLayout.setLayoutParams(new LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+            } else {
+                mFooterLayout.setOrientation(LinearLayout.HORIZONTAL);
+                mFooterLayout.setLayoutParams(new LayoutParams(WRAP_CONTENT, MATCH_PARENT));
+            }
         }
-        index = index >= mFooterLayout.getChildCount() ? -1 : index;
+        final int childCount = mFooterLayout.getChildCount();
+        if (index < 0 || index > childCount) {
+            index = childCount;
+        }
         mFooterLayout.addView(footer, index);
         if (mFooterLayout.getChildCount() == 1) {
             int position = getFooterViewPosition();
             if (position != -1) {
                 notifyItemInserted(position);
             }
+        }
+        return index;
+    }
+
+    public int setFooterView(View header) {
+        return setFooterView(header, 0, LinearLayout.VERTICAL);
+    }
+
+    public int setFooterView(View header, int index) {
+        return setFooterView(header, index, LinearLayout.VERTICAL);
+    }
+
+    public int setFooterView(View header, int index, int orientation) {
+        if (mFooterLayout == null || mFooterLayout.getChildCount() <= index) {
+            return addFooterView(header, index, orientation);
+        } else {
+            mFooterLayout.removeViewAt(index);
+            mFooterLayout.addView(header, index);
+            return index;
         }
     }
 
@@ -868,15 +1146,36 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
         return -1;
     }
 
+    public void setEmptyView(int layoutResId, ViewGroup viewGroup) {
+        View view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutResId, viewGroup, false);
+        setEmptyView(view);
+    }
+
+    /**
+     * bind recyclerView {@link #bindToRecyclerView(RecyclerView)} before use!
+     *
+     * @see #bindToRecyclerView(RecyclerView)
+     */
+    public void setEmptyView(int layoutResId) {
+        checkNotNull();
+        setEmptyView(layoutResId, getRecyclerView());
+    }
+
     public void setEmptyView(View emptyView) {
         boolean insert = false;
-        if (mEmptyView == null) {
-            mEmptyView = new FrameLayout(emptyView.getContext());
-            mEmptyView.setLayoutParams(new LayoutParams(MATCH_PARENT, WRAP_CONTENT));
+        if (mEmptyLayout == null) {
+            mEmptyLayout = new FrameLayout(emptyView.getContext());
+            final LayoutParams layoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+            final ViewGroup.LayoutParams lp = emptyView.getLayoutParams();
+            if (lp != null) {
+                layoutParams.width = lp.width;
+                layoutParams.height = lp.height;
+            }
+            mEmptyLayout.setLayoutParams(layoutParams);
             insert = true;
         }
-        mEmptyView.removeAllViews();
-        mEmptyView.addView(emptyView);
+        mEmptyLayout.removeAllViews();
+        mEmptyLayout.addView(emptyView);
         mIsUseEmpty = true;
         if (insert) {
             if (getEmptyViewCount() == 1) {
@@ -891,6 +1190,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
 
     /**
      * Call before {@link RecyclerView#setAdapter(RecyclerView.Adapter)}
+     *
      * @param isHeadAndEmpty false will not show headView if the data is empty true will show emptyView and headView
      */
     public void setHeaderAndEmpty(boolean isHeadAndEmpty) {
@@ -900,6 +1200,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
     /**
      * set emptyView show if adapter is empty and want to show headview and footview
      * Call before {@link RecyclerView#setAdapter(RecyclerView.Adapter)}
+     *
      * @param isHeadAndEmpty
      * @param isFootAndEmpty
      */
@@ -925,7 +1226,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      * @return The view to show if the adapter is empty.
      */
     public View getEmptyView() {
-        return mEmptyView;
+        return mEmptyLayout;
     }
 
     private int mAutoLoadMoreSize = 1;
@@ -949,7 +1250,16 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
         mLoadMoreView.setLoadMoreStatus(LoadMoreView.STATUS_LOADING);
         if (!mLoading) {
             mLoading = true;
-            mRequestLoadMoreListener.onLoadMore();
+            if (getRecyclerView() != null) {
+                getRecyclerView().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mRequestLoadMoreListener.onLoadMore();
+                    }
+                });
+            } else {
+                mRequestLoadMoreListener.onLoadMore();
+            }
         }
     }
 
@@ -977,7 +1287,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
     }
 
     /**
-     * set anim to start when recycler_view_loading
+     * set anim to start when loading
      *
      * @param anim
      * @param index
@@ -995,12 +1305,10 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      * @return view will be return
      */
     protected View getItemView(int layoutResId, ViewGroup parent) {
-        View view = mLayoutInflater.inflate(layoutResId, parent, false);
-        if (view instanceof ViewGroup)
-            ViewUtil.scaleContentView((ViewGroup) view);
-        else
-            ViewUtil.scaleView(view);
-        return view;
+       // View view = mLayoutInflater.inflate(layoutResId, parent, false);
+      //  AutoUtils.auto(view);
+       // return InflateHelper.getInstance().inflater(mLayoutInflater,layoutResId,parent,false);
+        return  mLayoutInflater.inflate(layoutResId, parent, false);
     }
 
 
@@ -1014,7 +1322,8 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
     /**
      * Set the view animation type.
      *
-     * @param animationType One of {@link #ALPHAIN}, {@link #SCALEIN}, {@link #SLIDEIN_BOTTOM}, {@link #SLIDEIN_LEFT}, {@link #SLIDEIN_RIGHT}.
+     * @param animationType One of {@link #ALPHAIN}, {@link #SCALEIN}, {@link #SLIDEIN_BOTTOM},
+     *                      {@link #SLIDEIN_LEFT}, {@link #SLIDEIN_RIGHT}.
      */
     public void openLoadAnimation(@AnimationType int animationType) {
         this.mOpenAnimationEnable = true;
@@ -1051,7 +1360,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
     }
 
     /**
-     * To open the animation when recycler_view_loading
+     * To open the animation when loading
      */
     public void openLoadAnimation() {
         this.mOpenAnimationEnable = true;
@@ -1060,7 +1369,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
     /**
      * {@link #addAnimation(RecyclerView.ViewHolder)}
      *
-     * @param firstOnly true just show anim when first recycler_view_loading false show anim when load the data every time
+     * @param firstOnly true just show anim when first loading false show anim when load the data every time
      */
     public void isFirstOnly(boolean firstOnly) {
         this.mFirstOnlyEnable = firstOnly;
@@ -1072,7 +1381,27 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      * @param helper A fully initialized helper.
      * @param item   The item that needs to be displayed.
      */
-    protected abstract void convert(RecyclerViewHolder helper, T item);
+    protected abstract void convert(RecyclerViewHolder helper, ADT item);
+
+    /**
+     * get the specific view by position,e.g. getViewByPosition(2, R.id.textView)
+     * <p>
+     * bind recyclerView {@link #bindToRecyclerView(RecyclerView)} before use!
+     *
+     * @see #bindToRecyclerView(RecyclerView)
+     */
+    public View getViewByPosition(int position, int viewId) {
+        checkNotNull();
+        return getViewByPosition(getRecyclerView(), position, viewId);
+    }
+
+    public View getViewByPosition(RecyclerView recyclerView, int position, int viewId) {
+        if (recyclerView == null) {
+            return null;
+        }
+        RecyclerViewHolder viewHolder = (RecyclerViewHolder) recyclerView.findViewHolderForLayoutPosition(position);
+        return viewHolder.getView(viewId);
+    }
 
     /**
      * Get the row id associated with the specified position in the list.
@@ -1108,7 +1437,8 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      *
      * @param position     position of the item
      * @param animate      expand items with animation
-     * @param shouldNotify notify the RecyclerView to rebind items, <strong>false</strong> if you want to do it yourself.
+     * @param shouldNotify notify the RecyclerView to rebind items, <strong>false</strong> if you want to do it
+     *                     yourself.
      * @return the number of items that have been added.
      */
     public int expand(@IntRange(from = 0) int position, boolean animate, boolean shouldNotify) {
@@ -1167,7 +1497,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
     public int expandAll(int position, boolean animate, boolean notify) {
         position -= getHeaderLayoutCount();
 
-        T endItem = null;
+        ADT endItem = null;
         if (position + 1 < this.mData.size()) {
             endItem = getItem(position + 1);
         }
@@ -1179,7 +1509,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
 
         int count = expand(position + getHeaderLayoutCount(), false, false);
         for (int i = position + 1; i < this.mData.size(); i++) {
-            T item = getItem(i);
+            ADT item = getItem(i);
 
             if (item == endItem) {
                 break;
@@ -1212,16 +1542,16 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
     }
 
     private int recursiveCollapse(@IntRange(from = 0) int position) {
-        T item = getItem(position);
+        ADT item = getItem(position);
         if (!isExpandable(item)) {
             return 0;
         }
         IExpandable expandable = (IExpandable) item;
         int subItemCount = 0;
         if (expandable.isExpanded()) {
-            List<T> subItems = expandable.getSubItems();
+            List<ADT> subItems = expandable.getSubItems();
             for (int i = subItems.size() - 1; i >= 0; i--) {
-                T subItem = subItems.get(i);
+                ADT subItem = subItems.get(i);
                 int pos = getItemPosition(subItem);
                 if (pos < 0) {
                     continue;
@@ -1285,7 +1615,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
         return collapse(position, animate, true);
     }
 
-    private int getItemPosition(T item) {
+    private int getItemPosition(ADT item) {
         return item != null && mData != null && !mData.isEmpty() ? mData.indexOf(item) : -1;
     }
 
@@ -1294,12 +1624,12 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
         return list != null && list.size() > 0;
     }
 
-    private boolean isExpandable(T item) {
+    public boolean isExpandable(ADT item) {
         return item != null && item instanceof IExpandable;
     }
 
     private IExpandable getExpandableItem(int position) {
-        T item = getItem(position);
+        ADT item = getItem(position);
         if (isExpandable(item)) {
             return (IExpandable) item;
         } else {
@@ -1315,7 +1645,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
      * if the item's level is negative which mean do not implement this, return a negative
      * if the item is not exist in the data list, return a negative.
      */
-    public int getParentPosition(@NonNull T item) {
+    public int getParentPosition(@NonNull ADT item) {
         int position = getItemPosition(item);
         if (position == -1) {
             return -1;
@@ -1336,7 +1666,7 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
         }
 
         for (int i = position; i >= 0; i--) {
-            T temp = mData.get(i);
+            ADT temp = mData.get(i);
             if (temp instanceof IExpandable) {
                 IExpandable expandable = (IExpandable) temp;
                 if (expandable.getLevel() >= 0 && expandable.getLevel() < level) {
@@ -1345,5 +1675,149 @@ public abstract class RecyclerBaseAdapter<T> extends RecyclerView.Adapter<Recycl
             }
         }
         return -1;
+    }
+
+    /**
+     * Interface definition for a callback to be invoked when an itemchild in this
+     * view has been clicked
+     */
+    public interface OnItemChildClickListener {
+        /**
+         * callback method to be invoked when an item in this view has been
+         * click and held
+         *
+         * @param view     The view whihin the ItemView that was clicked
+         * @param position The position of the view int the adapter
+         * @return true if the callback consumed the long click ,false otherwise
+         */
+        boolean onItemChildClick(RecyclerBaseAdapter adapter, View view, int position);
+    }
+
+
+    /**
+     * Interface definition for a callback to be invoked when an childView in this
+     * view has been clicked and held.
+     */
+    public interface OnItemChildLongClickListener {
+        /**
+         * callback method to be invoked when an item in this view has been
+         * click and held
+         *
+         * @param view     The childView whihin the itemView that was clicked and held.
+         * @param position The position of the view int the adapter
+         * @return true if the callback consumed the long click ,false otherwise
+         */
+        void onItemChildLongClick(RecyclerBaseAdapter adapter, View view, int position);
+    }
+
+    /**
+     * Interface definition for a callback to be invoked when an item in this
+     * view has been clicked and held.
+     */
+    public interface OnItemLongClickListener {
+        /**
+         * callback method to be invoked when an item in this view has been
+         * click and held
+         *
+         * @param adapter  the adpater
+         * @param view     The view whihin the RecyclerView that was clicked and held.
+         * @param position The position of the view int the adapter
+         * @return true if the callback consumed the long click ,false otherwise
+         */
+        boolean onItemLongClick(RecyclerBaseAdapter adapter, View view, int position);
+    }
+
+
+    /**
+     * Interface definition for a callback to be invoked when an item in this
+     * RecyclerView itemView has been clicked.
+     */
+    public interface OnItemClickListener {
+
+        /**
+         * Callback method to be invoked when an item in this RecyclerView has
+         * been clicked.
+         *
+         * @param adapter  the adpater
+         * @param view     The itemView within the RecyclerView that was clicked (this
+         *                 will be a view provided by the adapter)
+         * @param position The position of the view in the adapter.
+         */
+        void onItemClick(RecyclerBaseAdapter adapter, View view, int position);
+    }
+
+    /**
+     * Register a callback to be invoked when an item in this RecyclerView has
+     * been clicked.
+     *
+     * @param listener The callback that will be invoked.
+     */
+    public void setOnItemClickListener(@Nullable OnItemClickListener listener) {
+        mOnAdapterItemClickListener = listener;
+    }
+
+    /**
+     * Register a callback to be invoked when an itemchild in View has
+     * been  clicked
+     *
+     * @param listener The callback that will run
+     */
+    public void setOnItemChildClickListener(OnItemChildClickListener listener) {
+        mOnItemChildClickListener = listener;
+    }
+
+    /**
+     * Register a callback to be invoked when an item in this RecyclerView has
+     * been long clicked and held
+     *
+     * @param listener The callback that will run
+     */
+    public void setOnItemLongClickListener(OnItemLongClickListener listener) {
+        mOnItemLongClickListener = listener;
+    }
+
+    /**
+     * Register a callback to be invoked when an itemchild  in this View has
+     * been long clicked and held
+     *
+     * @param listener The callback that will run
+     */
+    public void setOnItemChildLongClickListener(OnItemChildLongClickListener listener) {
+        mOnItemChildLongClickListener = listener;
+    }
+
+
+    /**
+     * @return The callback to be invoked with an item in this RecyclerView has
+     * been long clicked and held, or null id no callback as been set.
+     */
+    public final OnItemLongClickListener getOnItemLongClickListener() {
+        return mOnItemLongClickListener;
+    }
+
+    /**
+     * @return The callback to be invoked with an item in this RecyclerView has
+     * been clicked and held, or null id no callback as been set.
+     */
+    public final OnItemClickListener getOnAdapterItemClickListener() {
+        return mOnAdapterItemClickListener;
+    }
+
+    /**
+     * @return The callback to be invoked with an itemchild in this RecyclerView has
+     * been clicked, or null id no callback has been set.
+     */
+    @Nullable
+    public final OnItemChildClickListener getOnItemChildClickListener() {
+        return mOnItemChildClickListener;
+    }
+
+    /**
+     * @return The callback to be invoked with an itemChild in this RecyclerView has
+     * been long clicked, or null id no callback has been set.
+     */
+    @Nullable
+    public final OnItemChildLongClickListener getmOnItemChildLongClickListener() {
+        return mOnItemChildLongClickListener;
     }
 }

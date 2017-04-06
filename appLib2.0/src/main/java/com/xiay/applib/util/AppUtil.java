@@ -16,8 +16,8 @@ import java.util.Map;
 
 import cn.xiay.ui.Toast;
 import cn.xiay.util.AppActivityManager;
+import cn.xiay.util.AppHelper;
 import cn.xiay.util.SPUtil;
-import cn.xiay.util.SystemUtil;
 
 /**
  */
@@ -82,7 +82,7 @@ public class AppUtil {
      *
      */
     public   void installApk(Context ctx,String filePath ) {
-        if (SystemUtil.getInstance().installApk(ctx,filePath)){
+        if (AppHelper.getInstance().installApk(ctx,filePath)){
             if (isForceUpdate){
                 AppActivityManager.getInstance().removeAllActivity();
                 Toast.show("请安装最新版");
@@ -103,7 +103,7 @@ public class AppUtil {
      * @param ctx
      */
     public  void installCount(Context ctx,Map<String, String> params){
-        boolean isInstall= SPUtil.getBoolean("isAppIntall");
+        boolean isInstall= SPUtil.getInstance().getBoolean("isAppIntall");
         if (!isInstall){
             AppActivity appActivity=(AppActivity)ctx;
             appActivity.sendStringPost(params,new HttpCallBack<String>(){
@@ -112,7 +112,7 @@ public class AppUtil {
                     try {
                         JSONObject jObj=new JSONObject(response);
                         if (jObj.getInt("status")==1)
-                            SPUtil.saveBoolean("isAppIntall",true);
+                            SPUtil.getInstance().saveBoolean("isAppIntall",true);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

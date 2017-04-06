@@ -1,6 +1,5 @@
 package com.xiay.applib.config;
 
-import cn.xiay.bean.HttpConfig;
 import cn.xiay.util.SPUtil;
 
 /**
@@ -8,33 +7,52 @@ import cn.xiay.util.SPUtil;
  *
  * @xiay
  */
-public class ConfigUrl extends HttpConfig {
-    public  static  final String APP_CONFIG_URL_HEAD="APP_CONFIG_URL_HEAD";
-    public  static  final String APP_CONFIG_URL="APP_CONFIG_URL";
+public class ConfigUrl {
+    private static final String APP_CONFIG_DOMAIN = "APP_CONFIG_DOMAIN";
+    private static final String APP_CONFIG_LAST_URL = "APP_CONFIG_LAST_URL";
     /**
      * 域名
      */
-    public static String url;
+    private static String mDomain;
+    private static String mLastUrl;
 
     /**
-     *
-     * @param domainName 域名
-     * @param url 域名后面的请求地址
+     * @param domain  域名
+     * @param lastUrl 域名后面的请求地址
      */
-    public ConfigUrl(String domainName, String url) {
-        UrlHead = domainName;
-        this.url = url;
-        SPUtil.saveString(APP_CONFIG_URL_HEAD, domainName);
-        SPUtil.saveString(APP_CONFIG_URL, url);
+    public static void init(String domain, String lastUrl) {
+        mDomain = domain;
+        mLastUrl = lastUrl;
+        SPUtil.getInstance().saveString(APP_CONFIG_DOMAIN, domain);
+        SPUtil.getInstance().saveString(APP_CONFIG_LAST_URL, lastUrl);
     }
+
     /**
-     *
-     * @param domainName 域名
+     * @param domain 域名
      */
-    public ConfigUrl(String domainName) {
-        UrlHead = domainName;
-        url="";
-        SPUtil.saveString(APP_CONFIG_URL_HEAD, domainName);
-        SPUtil.saveString(APP_CONFIG_URL, url);
+    public static void init(String domain) {
+        mDomain = domain;
+        SPUtil.getInstance().saveString(APP_CONFIG_DOMAIN, domain);
+    }
+
+    public static String getDomain() {
+        if (mDomain != null) {
+            return mDomain;
+        }
+        return mDomain = SPUtil.getInstance().getString("APP_CONFIG_DOMAIN");
+    }
+
+    public static String getUrl() {
+        if (getLastUrl() == null)
+            return getDomain();
+        else
+            return getDomain() + getLastUrl();
+    }
+
+    public static String getLastUrl() {
+        if (mLastUrl == null) {
+            mLastUrl = SPUtil.getInstance().getString("APP_CONFIG_LAST_URL");
+        }
+        return mLastUrl;
     }
 }

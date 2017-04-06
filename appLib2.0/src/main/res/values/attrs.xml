@@ -68,4 +68,52 @@
         <attr name="gtsTagMinHeight" format="dimension" />
         <attr name="gtsCenterGap" format="dimension"/>
     </declare-styleable>
+
+    <declare-styleable name="TitleBar">
+        <attr name="titleBarTitle" format="string"/>
+        <attr name="titleBarRightText" format="string"/>
+        <attr name="titleBarLeftImage" format="reference"/>
+        <attr name="titleBarRightImage" format="reference"/>
+        <attr name="titleBarBackground" format="reference|color"/>
+    </declare-styleable>
+
+    <!--                 AutoLayout  Start               -->
+    <declare-styleable name="AutoLayout_Layout">
+        <attr name="layout_auto_basewidth">
+            <flag name="width" value="1"/>
+            <flag name="height" value="2"/>
+            <flag name="textSize" value="4"/>
+            <flag name="padding" value="8"/>
+            <flag name="margin" value="16"/>
+            <flag name="marginLeft" value="32"/>
+            <flag name="marginTop" value="64"/>
+            <flag name="marginRight" value="128"/>
+            <flag name="marginBottom" value="256"/>
+            <flag name="paddingLeft" value="512"/>
+            <flag name="paddingTop" value="1024"/>
+            <flag name="paddingRight" value="2048"/>
+            <flag name="paddingBottom" value="4096"/>
+        </attr>
+
+        <attr name="layout_auto_baseheight">
+            <flag name="width" value="1"/>
+            <flag name="height" value="2"/>
+            <flag name="textSize" value="4"/>
+            <flag name="padding" value="8"/>
+            <flag name="margin" value="16"/>
+            <flag name="marginLeft" value="32"/>
+            <flag name="marginTop" value="64"/>
+            <flag name="marginRight" value="128"/>
+            <flag name="marginBottom" value="256"/>
+            <flag name="paddingLeft" value="512"/>
+            <flag name="paddingTop" value="1024"/>
+            <flag name="paddingRight" value="2048"/>
+            <flag name="paddingBottom" value="4096"/>
+            <flag name="minWidth" value="8192"/>
+            <flag name="maxWidth" value="16384"/>
+            <flag name="minHeight" value="32768"/>
+            <flag name="maxHeight" value="65536"/>
+        </attr>
+    </declare-styleable>
+    <!--                 AutoLayout  End               -->
 </resources>

@@ -1,5 +1,6 @@
 package com.xiay.applib.view.recyclerview;
 
+import android.support.annotation.LayoutRes;
 import android.util.SparseArray;
 import android.view.ViewGroup;
 
@@ -15,25 +16,30 @@ public abstract class RecyclerMultiItemAdapter<T extends MultiItemEntity> extend
      */
     private SparseArray<Integer> layouts;
 
+    private static final int DEFAULT_VIEW_TYPE = -0xff;
 
-    public RecyclerMultiItemAdapter() {
-        super();
-    }
     /**
      * Same as QuickAdapter#QuickAdapter(Context,int) but with
      * some initialization data.
      *
      * @param data    A new list is created out of this one to avoid mutable list
      */
-    public RecyclerMultiItemAdapter(List<T> data) {
+    public RecyclerMultiItemAdapter( List<T> data) {
         super( data);
     }
 
     @Override
     protected int getDefItemViewType(int position) {
-        return (mData.get(position)).getItemType();
+        Object item = mData.get(position);
+        if (item instanceof MultiItemEntity) {
+            return ((MultiItemEntity)item).getItemType();
+        }
+        return DEFAULT_VIEW_TYPE;
     }
 
+    protected void setDefaultViewTypeLayout(@LayoutRes int layoutResId) {
+        addItemType(DEFAULT_VIEW_TYPE, layoutResId);
+    }
 
     @Override
     protected RecyclerViewHolder onCreateDefViewHolder(ViewGroup parent, int viewType) {
@@ -44,16 +50,13 @@ public abstract class RecyclerMultiItemAdapter<T extends MultiItemEntity> extend
         return layouts.get(viewType);
     }
 
-    protected void addItemType(int type, int layoutResId) {
+    protected void addItemType(int type, @LayoutRes int layoutResId) {
         if (layouts == null) {
             layouts = new SparseArray<>();
         }
         layouts.put(type, layoutResId);
     }
 
-
-
-    protected abstract void convert(RecyclerViewHolder helper, T item);
 
 
 }

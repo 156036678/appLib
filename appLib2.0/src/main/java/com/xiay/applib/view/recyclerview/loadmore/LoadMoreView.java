@@ -11,7 +11,6 @@ import com.xiay.applib.view.recyclerview.RecyclerViewHolder;
  */
 
 public abstract class LoadMoreView {
-
     public static final int STATUS_DEFAULT = 1;
     public static final int STATUS_LOADING = 2;
     public static final int STATUS_FAIL = 3;
@@ -44,6 +43,11 @@ public abstract class LoadMoreView {
                 visibleLoading(holder, false);
                 visibleLoadFail(holder, false);
                 visibleLoadEnd(holder, true);
+                break;
+            case STATUS_DEFAULT:
+                visibleLoading(holder, false);
+                visibleLoadFail(holder, false);
+                visibleLoadEnd(holder, false);
                 break;
         }
     }
@@ -89,7 +93,7 @@ public abstract class LoadMoreView {
     public abstract @LayoutRes int getLayoutId();
 
     /**
-     * recycler_view_loading view
+     * loading view
      *
      * @return
      */

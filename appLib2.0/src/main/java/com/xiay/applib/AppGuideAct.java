@@ -18,7 +18,7 @@ import com.xiay.applib.view.guide.CirclePageIndicator;
 
 import java.util.List;
 
-import cn.xiay.bean.MyDevice;
+import cn.xiay.util.autolayout.config.AutoLayoutConifg;
 
 /**
  * 引导页
@@ -81,10 +81,6 @@ public abstract class AppGuideAct extends AppActivity implements View.OnTouchLis
         return null;
     }
     @Override
-    public int getPageHeaderColorResources() {
-        return 0;
-    }
-    @Override
     public int getStatusBarColor() {
         return 0;
     }
@@ -112,7 +108,7 @@ public abstract class AppGuideAct extends AppActivity implements View.OnTouchLis
                 lastX = (int)event.getX();
                 break;
             case MotionEvent.ACTION_MOVE:
-                if((lastX - event.getX()) > MyDevice.sWidth/2 && (currentIndex == size -1) && locker){
+                if((lastX - event.getX()) > AutoLayoutConifg.getInstance().getScreenWidth()/2 && (currentIndex == size -1) && locker){
                     locker = false;
                     onOpenActivity();
                 }

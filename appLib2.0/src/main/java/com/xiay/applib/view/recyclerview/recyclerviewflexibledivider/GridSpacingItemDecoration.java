@@ -4,7 +4,7 @@ import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import cn.xiay.util.ViewUtil;
+import cn.xiay.util.autolayout.utils.AutoUtils;
 
 /**
  * Created by dee on 2015/8/18.
@@ -15,9 +15,9 @@ public class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
     private int spacing;
     private boolean includeEdge;
 
-    public GridSpacingItemDecoration(int spanCount, float spacing, boolean includeEdge) {
+    public GridSpacingItemDecoration(int spanCount, int spacing, boolean includeEdge) {
         this.spanCount = spanCount;
-        this.spacing =  ViewUtil.scaleValue(spacing);
+        this.spacing = AutoUtils.getPercentWidthSizeBigger(spacing);
         this.includeEdge = includeEdge;
     }
 

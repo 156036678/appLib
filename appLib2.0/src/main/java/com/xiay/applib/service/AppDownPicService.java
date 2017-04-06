@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import cn.xiay.util.SystemUtil;
+import cn.xiay.util.AppHelper;
 import cn.xiay.util.log.Log;
 /*##################################################
                        _ooOoo_
@@ -105,7 +105,7 @@ public class AppDownPicService extends Service {
                     @Override
                     public void doInIOThread() {
                         donePics = new ArrayList<>();
-                        String url, fileName , downPath = SystemUtil.getInstance().getDataDirectory(getApplicationContext()).getAbsolutePath();
+                        String url, fileName , downPath = AppHelper.getInstance().getDataDirectory().getAbsolutePath();
                         picCount = guidePic.pics.size();
                         for (int i = 0; i < guidePic.pics.size(); i++) {
                             url = guidePic.pics.get(i);
@@ -182,7 +182,8 @@ public class AppDownPicService extends Service {
         }
 
         @Override
-        public void onProgress(int what, int progress, long fileCount) {
+        public void onProgress(int what, int progress, long fileCount, long speed) {
+
         }
 
         @Override

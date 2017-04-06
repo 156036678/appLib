@@ -38,21 +38,21 @@ repositories {
 }
 
 dependencies {
-    //  compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:support-v4:+'
+      //  compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:support-v4:25.3.1'
     compile 'com.github.bumptech.glide:glide:3.7.0'
-    compile 'com.google.code.gson:gson:2.2.4'
-    compile 'com.android.support:recyclerview-v7:+'
-    compile 'com.android.support:appcompat-v7:+'
-     // compile project(':AppJar2.0')
+    compile 'com.google.code.gson:gson:2.8.0'
+    compile 'com.android.support:recyclerview-v7:25.3.1'
+    compile 'com.android.support:appcompat-v7:25.3.1'
     compile files('libs/AppJar.jar')
-    compile 'com.squareup.okhttp3:okhttp-urlconnection:3.4.1'
-    compile 'com.yanzhenjie:permission:1.0.2'
+    compile 'com.squareup.okhttp3:okhttp-urlconnection:3.6.0'
+    compile 'com.yanzhenjie:permission:1.0.5'
     //RxAndroid
     compile 'io.reactivex:rxandroid:+'
     compile 'io.reactivex:rxjava:+'
-
-    compile 'com.tencent.bugly:crashreport:+'
+    // compile 'com.tencent.bugly:crashreport:+'
     compile files('libs/ormlite-android-5.0.jar')
     compile files('libs/ormlite-core-5.0.jar')
+    compile 'com.tencent.bugly:crashreport_upgrade:latest.release'
+    compile 'com.android.support:multidex:1.0.1'
 }

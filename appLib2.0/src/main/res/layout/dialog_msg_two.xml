@@ -47,7 +47,7 @@
             android:textSize="42px" />
         <View
             android:id="@+id/v_line"
-            android:layout_width="0.5px"
+            android:layout_width="1px"
             android:layout_height="match_parent"
             android:layout_centerHorizontal="true"
             android:background="#B4B4B4" />

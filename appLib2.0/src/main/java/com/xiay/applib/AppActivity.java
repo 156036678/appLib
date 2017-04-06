@@ -1,6 +1,7 @@
 package com.xiay.applib;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -9,15 +10,12 @@ import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.ArrayMap;
+import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageButton;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.nohttp.RequestMethod;
@@ -32,25 +30,22 @@ import com.xiay.applib.config.ConfigUrl;
 import com.xiay.applib.request.BeanReqeust;
 import com.xiay.applib.ui.dialog.MyDialog;
 import com.xiay.applib.util.StatusBarUtil;
+import com.xiay.applib.util.autolayout.AutoFrameLayout;
+import com.xiay.applib.util.autolayout.AutoLinearLayout;
+import com.xiay.applib.util.autolayout.AutoRelativeLayout;
 import com.xiay.applib.util.rxjava.RxManager;
+import com.xiay.applib.view.TitleBar;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Map;
 
-import cn.xiay.bean.HttpConfig;
-import cn.xiay.bean.MyDevice;
 import cn.xiay.dialog.BaseDialog;
 import cn.xiay.dialog.ClickListener;
 import cn.xiay.ui.Toast;
 import cn.xiay.util.AppActivityManager;
-import cn.xiay.util.SPUtil;
-import cn.xiay.util.SystemUtil;
-import cn.xiay.util.ViewUtil;
-
-import static com.xiay.applib.R.id.rl_page_head;
-
+import cn.xiay.util.AppHelper;
 
 /**
  * 描述：继承BaseHttpActivity 可实现网络请求和加载网络图片
@@ -58,54 +53,84 @@ import static com.xiay.applib.R.id.rl_page_head;
  * @author Xiay .
  */
 public abstract class AppActivity extends AbHttpActivity {
-    public RelativeLayout pageHead;
-    public ImageButton btn_back;
-    public int backImageResId = 0;
-    protected boolean hasRightBtn;
+    /**是否有返回按钮*/
+    private boolean hasBackButton;
     private boolean isScaleView = true;
     protected int layoutId;
+    public TitleBar titleBar;
     public RxManager rxManager = new RxManager();
+    public AppActivity activity;
+    private static final String LAYOUT_LINEARLAYOUT = "LinearLayout";
+    private static final String LAYOUT_FRAMELAYOUT = "FrameLayout";
+    private static final String LAYOUT_RELATIVELAYOUT = "RelativeLayout";
 
+
+    @Override
+    public View onCreateView(String name, Context context, AttributeSet attrs)
+    {
+        View view = null;
+        if (name.equals(LAYOUT_FRAMELAYOUT))
+        {
+            view = new AutoFrameLayout(context, attrs);
+        }
+
+        if (name.equals(LAYOUT_LINEARLAYOUT))
+        {
+            view = new AutoLinearLayout(context, attrs);
+        }
+
+        if (name.equals(LAYOUT_RELATIVELAYOUT))
+        {
+            view = new AutoRelativeLayout(context, attrs);
+        }
+
+        if (view != null) return view;
+
+        return super.onCreateView(name, context, attrs);
+    }
     protected void onCreate(Bundle paramBundle) {
+        activity=this;
         super.onCreate(paramBundle);
         int statusBarColor = getStatusBarColor();
+        initPageView();
+        if (statusBarColor != 0) {
+            StatusBarUtil.setColor(this, getResources().getColor(statusBarColor), 0);
+            if (titleBar!=null)
+            titleBar.setBackgroundColor(getResources().getColor(statusBarColor));
+        }
+    }
+
+    protected void initPageView() {
         if (layoutId != -1) {//如果是-1,说明是通过Binding方式设置的布局
             layoutId = setContentView();
             View view;
             if (layoutId != 0) {
                 super.setContentView(setContentView());
-                view = ((ViewGroup) findViewById(android.R.id.content)).getChildAt(0);
+              //  view = ((ViewGroup) findViewById(android.R.id.content)).getChildAt(0);
             } else {
                 view = setNewContentView();
                 if (view != null)
                     super.setContentView(view);
             }
-            scaleView(view);
-        }
-        if (statusBarColor != 0) {
-            StatusBarUtil.setColor(this, getResources().getColor(statusBarColor), 0);
+           // scaleView(view);
         }
         setPageTitle(setTitle(), setTitleTextColor());
     }
 
-    public void scaleView(View view) {
-        if (view != null) {
-            if (view instanceof ViewGroup) {
-                ViewGroup content = (ViewGroup) view;
-                if (isScaleView) {
-                    ViewUtil.scaleContentView(content);
-                }
-                pageHead = (RelativeLayout) content.findViewById(rl_page_head);
-                if (pageHead != null && getPageHeaderColorResources() != 0) {
-                    pageHead.setBackgroundColor(getPageHeaderColorResources());
-                }
-            } else {
-                if (isScaleView) {
-                    ViewUtil.scaleView(view);
-                }
-            }
-        }
-    }
+//    public void scaleView(View view) {
+//        if (view != null) {
+//            if (view instanceof ViewGroup) {
+//                ViewGroup content = (ViewGroup) view;
+//                if (isScaleView) {
+//                    ViewUtil.scaleContentView(content);
+//                }
+//            } else {
+//                if (isScaleView) {
+//                    ViewUtil.scaleView(view);
+//                }
+//            }
+//        }
+//    }
 
     /**
      * 为头部是 ImageView 的界面设置状态栏透明(使用默认透明度)
@@ -142,10 +167,6 @@ public abstract class AppActivity extends AbHttpActivity {
         return getResources().getColor(R.color.white);
     }
 
-    /**
-     * 设置导航栏颜色
-     */
-    public abstract int getPageHeaderColorResources();
 
     @TargetApi(19)
     private void setTranslucentStatus(boolean on) {
@@ -161,18 +182,19 @@ public abstract class AppActivity extends AbHttpActivity {
     }
 
     protected void setPageTitle(String title) {
-        setPageTitle(title, 0);
+        setPageTitle(title, -1);
     }
 
     protected void setPageTitle(String title, int textColor) {
-        TextView tv_pageHeadName = (TextView) findViewById(R.id.tv_pageHeadName);
-        if (tv_pageHeadName != null && title != null) {
-            tv_pageHeadName.setText(title);
-            if (textColor != 0) {
-                tv_pageHeadName.setTextColor(textColor);
+        titleBar=findView(R.id.title_bar);
+        if (titleBar!=null){
+            if ( title != null){
+                titleBar.setTitle(title);
+            }
+            if (textColor != -1) {
+                titleBar.setTitleColor(textColor);
             }
         }
-
     }
 
     /**
@@ -206,7 +228,7 @@ public abstract class AppActivity extends AbHttpActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (btn_back == null) {
+            if (!isCanBack()) {
                 ((MyDialog) getDialog()).showExit(new ClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -221,6 +243,12 @@ public abstract class AppActivity extends AbHttpActivity {
             return true;
         }
         return false;
+    }
+    public boolean isCanBack(){
+        return  hasBackButton;
+    }
+    public boolean setCanBack(){
+        return  hasBackButton=true;
     }
 
     //========================================= 以下实现代码为固定写法  =========================================
@@ -252,18 +280,6 @@ public abstract class AppActivity extends AbHttpActivity {
     public Map<String, String> initParams(String method) {
         Map<String, String> params = new ArrayMap<>();
         params.put("method", method);
-//        if (EncryptUtil.isEnable()) {//如果开启加密
-//            params = new ArrayMap<>();
-//            params.put("method", method);
-//        } else {
-//            String time = System.currentTimeMillis() + "";
-//            params = new TreeMap<>();
-//            params.put("method", method);
-//            params.put("time", time);
-//            if (ConfigMethodSign.methodSign == null)
-//                ConfigMethodSign.methodSign = SPUtil.getString("methodSign");
-//            params.put("code", MD5Util.convertToMD5(time + method + ConfigMethodSign.methodSign));
-//        }
         return params;
     }
 
@@ -329,29 +345,22 @@ public abstract class AppActivity extends AbHttpActivity {
 
     public <T> void sendPost(int what, Request<T> request, final Map<String, String> params, String dialogMsg, HttpListener<T> httpCallback) {
         request.setRequestMethod(RequestMethod.POST);
-        if (ConfigUrl.UrlHead == null || ConfigUrl.url == null) {
-            ConfigUrl.UrlHead = SPUtil.getString(ConfigUrl.APP_CONFIG_URL_HEAD);
-            ConfigUrl.url = SPUtil.getString(ConfigUrl.APP_CONFIG_URL);
-        }
         if (request.getUrl() == null) {
             if (getUrl() == null)
-                request.setUrl(HttpConfig.UrlHead + ConfigUrl.url);
+                request.setUrl(ConfigUrl.getUrl());
             else
                 request.setUrl(getUrl());
         }
         String time = System.currentTimeMillis() + "";
-        ArrayMap fixedParams = new ArrayMap<>();
+        ArrayMap<String,String> fixedParams = new ArrayMap<>();
         fixedParams.put("time", time + "");
         fixedParams.put("plat", "2");
-        fixedParams.put("version", SystemUtil.getInstance().getVersionCode(this) + "");
-        if (MyDevice.IMEI == null) {
-            MyDevice.IMEI = SPUtil.getString("imei");
-        }
-        fixedParams.put("sign", MyDevice.IMEI);
+        fixedParams.put("version", AppHelper.getInstance().getVersionCode() + "");
+        fixedParams.put("sign", AppHelper.getInstance().getIMEI());
         fixedParams.put("method", params.get("method"));
         params.remove("method");
         fixedParams.put("data", new Gson().toJson(params));
-        params.put("method", (String) fixedParams.get("method"));
+        params.put("method", fixedParams.get("method"));
         Map<String, String> paramsFinal = new ArrayMap<>();
         if (EncryptUtil.isEnable()) {//如果开启加密
             paramsFinal.put("params", EncryptUtil.encrypt(new Gson().toJson(fixedParams)));
@@ -359,26 +368,6 @@ public abstract class AppActivity extends AbHttpActivity {
             paramsFinal.put("params", new Gson().toJson(fixedParams));
         }
         sendRequest(what, request, paramsFinal, dialogMsg, false, httpCallback);
-//        if (EncryptUtil.isEnable()) {//如果开启加密
-//            String time = System.currentTimeMillis() + "";
-//            ArrayMap  fixedParams = new ArrayMap<>();
-//            fixedParams.put("time", time + "");
-//            fixedParams.put("plat", "2");
-//            fixedParams.put("version", AppTinkerApplication.versionCode + "");
-//            if (MyDevice.IMEI == null) {
-//                MyDevice.IMEI = SPUtil.getString("imei");
-//            }
-//            fixedParams.put("sign", MyDevice.IMEI);
-//            fixedParams.put("method", params.get("method"));
-//            params.remove("method");
-//            fixedParams.put("data",new Gson().toJson(params));
-//            params.put("method", (String) fixedParams.get("method"));
-//            Map<String, String> paramsFinal = new ArrayMap<>();
-//            paramsFinal.put("params", EncryptUtil.encrypt(new Gson().toJson(fixedParams)));
-//            sendRequest(what, request, paramsFinal, dialogMsg, false, httpCallback);
-//        } else {
-//            sendRequest(what, request, params, dialogMsg, false, httpCallback);
-//        }
     }
 
     public String getUrl() {
@@ -446,7 +435,20 @@ public abstract class AppActivity extends AbHttpActivity {
         overridePendingTransition(R.anim.right_in, R.anim.left_out);
         startActivities(intents);
     }
+  public void addBackButton(int imageResId){
+      hasBackButton = true;
+      if (titleBar!=null){
+          titleBar.setLeftImageResource(imageResId);
+          titleBar.setLeftLayoutVisibility(View.VISIBLE);
+          titleBar.getLeftLayout().setOnClickListener(new View.OnClickListener() {
+              @Override
+              public void onClick(View v) {
+                  closeActivity();
+              }
+          });
+      }
 
+    }
     /**
      * 跳转activity
      */
@@ -515,57 +517,10 @@ public abstract class AppActivity extends AbHttpActivity {
             rxManager.clear();
         super.onDestroy();
     }
-
-    /**
-     * 添加返回按钮
-     */
-    public ImageButton addBackBtn(int imageResource) {
-        if (pageHead == null)
-            pageHead = findView(R.id.rl_page_head);
-        if (pageHead == null)
-            return null;
-        btn_back = new ImageButton(this);
-        //btn_back.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.MATCH_PARENT));
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-        params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-        btn_back.setPadding(30, 0, 30, 0);
-        btn_back.setBackgroundDrawable(null);
-        if (backImageResId == 0)
-            btn_back.setImageResource(imageResource);
-        else
-            btn_back.setImageResource(backImageResId);
-        pageHead.addView(btn_back, params);
-        btn_back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                closeActivity();
-            }
-        });
-        return btn_back;
-    }
-
-    /**
-     * 添加右边按钮
-     */
-    public View addRightView(View view) {
-        pageHead = findView(R.id.rl_page_head);
-        if (pageHead != null) {
-            hasRightBtn = true;
-            //btn_back.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.MATCH_PARENT));
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-            params.addRule(RelativeLayout.CENTER_VERTICAL, RelativeLayout.TRUE);
-            view.setPadding(ViewUtil.scaleValue(45), 0, ViewUtil.scaleValue(45), 0);
-            pageHead.addView(view, params);
-
-        }
-        return view;
-    }
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (null != this.getCurrentFocus()) {
-            SystemUtil.getInstance().hideSoftInput(this);
+            AppHelper.getInstance().hideSoftInput(this);
         }
         return super.onTouchEvent(event);
     }

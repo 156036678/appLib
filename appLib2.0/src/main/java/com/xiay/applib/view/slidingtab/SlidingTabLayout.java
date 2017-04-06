@@ -16,7 +16,7 @@ import com.xiay.applib.R;
 import java.util.ArrayList;
 import java.util.List;
 
-import cn.xiay.util.ViewUtil;
+import cn.xiay.util.autolayout.utils.AutoUtils;
 
 
 public class SlidingTabLayout extends ViewGroup implements OnPageChangeListener {
@@ -42,7 +42,8 @@ public class SlidingTabLayout extends ViewGroup implements OnPageChangeListener 
     viewPager.addOnPageChangeListener(this);
     for (int i = 0; i < dataHolders.size(); ++i) {
       RelativeLayout v = (RelativeLayout) LayoutInflater.from(getContext()).inflate(R.layout.sliding_tab_layout, this, false);
-      ViewUtil.scaleContentView(v);
+    //  ViewUtil.scaleContentView(v);
+      AutoUtils.auto(v);
       final int j = i;
       v.setOnClickListener(new OnClickListener() {
         @Override public void onClick(View v) {
@@ -70,7 +71,7 @@ public class SlidingTabLayout extends ViewGroup implements OnPageChangeListener 
        viewPager.addOnPageChangeListener(this);
     for (int i = 0; i < dataHolders.size(); ++i) {
       RelativeLayout v = (RelativeLayout) LayoutInflater.from(getContext()).inflate(R.layout.sliding_tab_layout, this, false);
-      ViewUtil.scaleContentView(v);
+      AutoUtils.auto(v);
       final int j = i;
       v.setOnClickListener(new OnClickListener() {
         @Override public void onClick(View v) {
@@ -93,7 +94,7 @@ public class SlidingTabLayout extends ViewGroup implements OnPageChangeListener 
     }
   }
   public  void  setMargin(int margin){
-     this.margin= ViewUtil.scaleValue(margin);
+     this.margin= AutoUtils.getPercentWidthSizeBigger(margin);
   }
 
   @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {

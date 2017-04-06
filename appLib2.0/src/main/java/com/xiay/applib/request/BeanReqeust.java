@@ -61,11 +61,17 @@ public class BeanReqeust<T> extends RestRequest<T> {
 			}
 			try {
 				JSONObject jObj=new JSONObject(res);
-				((BaseBean)obj).msg=jObj.getString("msg");
+				int status=jObj.getInt("status");
+				if(status==1){//数据获取成功，但是解析失败
+					((BaseBean)obj).status=0;
+					((BaseBean)obj).msg="解析数据失败";
+				}else {
+					((BaseBean)obj).msg=jObj.getString("msg");
+				}
 				return obj;
 			} catch (Exception e1) {
 				Log.e(e1);
-				((BaseBean)obj).msg="服务器数据出错";
+				((BaseBean)obj).msg="解析数据失败(1)";
 				return obj;
 			}
 		}

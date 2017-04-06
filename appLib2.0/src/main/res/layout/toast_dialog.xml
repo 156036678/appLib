@@ -1,29 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?>  
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-      android:id="@+id/scale"
+<?xml version="1.0" encoding="utf-8"?>
+<com.xiay.applib.util.autolayout.AutoLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scale"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-              android:background="@drawable/dialog_loading_bg"
-              android:layout_marginLeft="200px"
-              android:layout_marginRight="200px"
     android:layout_gravity="center"
+    android:layout_marginLeft="200px"
+    android:layout_marginRight="200px"
+    android:background="@drawable/dialog_loading_bg"
     android:gravity="center"
-    android:orientation="vertical" >
- <ImageView
-     android:id="@+id/iv_toastImage"
-     android:layout_width="140px" android:layout_height="140px"
-            android:layout_marginTop="35px"
-     android:scaleType="fitXY"
- />
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/iv_toastImage"
+        android:layout_width="140px"
+        android:layout_height="140px"
+        android:layout_marginTop="35px"
+        android:scaleType="fitXY" />
+
     <TextView
         android:id="@+id/toastText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15px"
-        android:textSize="39px"
+        android:layout_marginBottom="20px"
         android:layout_marginLeft="30px"
         android:layout_marginRight="30px"
-        android:layout_marginBottom="20px"
-        android:textColor="#ffffff" />
-  
-</LinearLayout>  
+        android:layout_marginTop="16px"
+        android:gravity="center_horizontal"
+        android:minWidth="60dp"
+        android:textColor="#ffffff"
+        android:textSize="39px" />
+
+</com.xiay.applib.util.autolayout.AutoLinearLayout>

@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -35,7 +36,7 @@ import java.util.List;
 
 
 
-public class ImageSelectorActivity extends ImageBaseActivity {
+public class ImageSelectorActivity extends AppCompatActivity {
     public final static int REQUEST_IMAGE = 66;
     public final static int REQUEST_CAMERA = 67;
 
@@ -411,8 +412,4 @@ public class ImageSelectorActivity extends ImageBaseActivity {
         return "com.google.android.apps.photos.content".equals(uri.getAuthority());
     }
 
-    @Override
-    public void onPermissionSucceed(int requestCode) {
-
-    }
 }

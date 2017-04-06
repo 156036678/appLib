@@ -5,14 +5,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.xiay.applib.R;
 
 import cn.xiay.dialog.BaseDialog;
 import cn.xiay.dialog.ClickListener;
-import cn.xiay.util.ViewUtil;
+import cn.xiay.util.autolayout.utils.AutoUtils;
 
 import static com.xiay.applib.R.id.btn_mid;
 
@@ -59,7 +58,8 @@ public class MyDialog extends BaseDialog {
 	public MyDialog showCancle(String msg) {
 		if (!isShowing()) {
 			setContentView(R.layout.dialog_msg_one);
-			ViewUtil.scaleContentView((LinearLayout)findViewById(R.id.ll_dialog_root));
+			AutoUtils.auto(findViewById(R.id.ll_dialog_root));
+			//ViewUtil.scaleContentView((LinearLayout)findViewById(R.id.ll_dialog_root));
 			TextView tv_msg = findView(R.id.tv_dialog_msg);
 			tv_msg.setText(msg);
 			Button btn =findView(btn_mid);
@@ -72,7 +72,8 @@ public class MyDialog extends BaseDialog {
 	public MyDialog showCancle(String msg, ClickListener listener) {
 		if (!isShowing()) {
 			setContentView(R.layout.dialog_msg_one);
-			ViewUtil.scaleContentView((LinearLayout)findViewById(R.id.ll_dialog_root));
+			AutoUtils.auto(findViewById(R.id.ll_dialog_root));
+			//ViewUtil.scaleContentView((LinearLayout)findViewById(R.id.ll_dialog_root));
 			TextView tv_msg = findView(R.id.tv_dialog_msg);
 			tv_msg.setText(msg);
 			Button btn =findView(btn_mid);
@@ -88,7 +89,8 @@ public class MyDialog extends BaseDialog {
 	public MyDialog showCancleAndSure(String title, String msg, String cancleBtnText, String sureBtnText, final ClickListener listener) {
 		if (!isShowing()) {
 			setContentView(R.layout.dialog_msg_two);
-			ViewUtil.scaleContentView((LinearLayout)findViewById(R.id.ll_dialog_root));
+			AutoUtils.auto(findViewById(R.id.ll_dialog_root));
+			//ViewUtil.scaleContentView((LinearLayout)findViewById(R.id.ll_dialog_root));
 			if (title!=null){
 				TextView tv_title = findView(R.id.tv_dialog_title);
 				tv_title.setText(title);
